@@ -1,4 +1,4 @@
-require 'ldp'
+require 'rdf'
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/object'
@@ -14,32 +14,17 @@ module FedoraProjection
   included do
     extend ActiveModel::Naming
     include ActiveModel::Validations
+    include ActiveModel::Conversion
 
     class_attribute :defined_attributes
-    self.defined_attributes = {}#.with_indifferent_access
+    self.defined_attributes = {}.with_indifferent_access
 
     def initialize(attributes = {})
       @attributes = attributes
     end
   end
 
-  # def valid?()        true  end
-  # def new_record?()   true  end
-  # def destroyed?()    true  end
-  def to_partial_path() ""    end
   def persisted?()      false end
-
-  def to_model
-    self
-  end
-
-  def to_key
-    persisted? ? [:id] : nil
-  end
-
-  def to_param
-    raise NotImplementedError if persisted?
-  end
 
   def errors
     obj = Object.new
@@ -55,13 +40,14 @@ module FedoraProjection
   module ClassMethods
     def find(id)
       uri = RDF::URI.parse(HOST + id)
-      # FedoraProjection.connection ||= Ldp::Client.new(HOST)
-      # reader = RDF::Reader.for(:turtle).new(FedoraProjection.connection.get(id).body)
-      # statements = reader.each_graph.first.statements.to_a
       graph = RDF::Graph.load(HOST + id, format: :ttl)
       attributes = defined_attributes.reduce({}) do |acc, pair|
         name, path = pair
-        acc[name] = path.last[:get].call(uri, graph)
+        gets = path.map{|segment| build_lens(segment)}.map{|h| h[:get]}.reduce do |outer, inner|
+          lambda {|*args| inner[outer[*args]]}
+        end
+        # acc[name] = path.first[:get].call(uri, graph)
+        acc[name] = gets.call(uri, graph)
         acc
       end
       self.new(attributes)
@@ -79,8 +65,29 @@ module FedoraProjection
       end
     end
 
-    def get_predicate(predicate, uri, graph)
-      graph.query([uri, predicate, nil]).map{|s| s.object.value}
+    def build_lens(path_segment)
+      if path_segment.is_a? RDF::URI
+        {
+          get: lambda do |uri, graph|
+            graph.query([uri, path_segment, nil]).map{|s| s.object.value}
+          end
+        }
+      else
+        path_segment
+      end
+    end
+
+    def only_one
+      {
+        get: :first.to_proc, set: lambda{|x| [x]}
+      }
+    end
+
+    def as_dom
+      {
+        get: lambda {|xml| puts "parsing..."; Nokogiri::XML(xml)},
+        set: lambda {|doc| doc.to_xml}
+      }
     end
   end
 end
@@ -88,15 +95,26 @@ end
 class TestClass
   include FedoraProjection
   # attribute :title, [RDF::DC.title]
-  # attribute :xml_title, [RDF::DC.title]
-  attribute :mixinTypes, [{
-    get: lambda do |uri, statements|
-      get_predicate(RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes"), uri, statements)
-    end
-  }]
-  attribute :primaryType, [{
-    get: lambda do |uri, statements|
-      get_predicate(RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"), uri, statements)
-    end
-  }]
+  attribute :mixinTypes, [RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
+  attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType")]
+
+  attribute :primary, [
+    RDF::URI.new('http://purl.org/dc/elements/1.1/relation'),
+    only_one,
+    as_dom,
+    {
+      get: lambda do |dom|
+        dom.at_css("relationship[type=primary]").content
+      end
+    }]
+
+  attribute :secondary, [
+    RDF::URI.new('http://purl.org/dc/elements/1.1/relation'),
+    only_one,
+    as_dom,
+    {
+      get: lambda do |dom|
+        dom.at_css("relationship[type=secondary]").content
+      end
+    }]
 end
