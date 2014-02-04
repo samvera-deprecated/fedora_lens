@@ -77,7 +77,7 @@ module FedoraProjection
       end
     end
 
-    def only_one
+    def single
       {
         get: :first.to_proc, set: lambda{|x| [x]}
       }
@@ -85,6 +85,7 @@ module FedoraProjection
 
     def as_dom
       {
+        # TODO figure out a memoizing strategy so we don't parse multiple times
         get: lambda {|xml| puts "parsing..."; Nokogiri::XML(xml)},
         set: lambda {|doc| doc.to_xml}
       }
@@ -94,24 +95,20 @@ end
 
 class TestClass
   include FedoraProjection
-  # attribute :title, [RDF::DC.title]
+  attribute :title, [RDF::DC.title, single]
   attribute :mixinTypes, [RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
-  attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType")]
+  attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"), single]
 
-  attribute :primary, [
-    RDF::URI.new('http://purl.org/dc/elements/1.1/relation'),
-    only_one,
-    as_dom,
+  attribute :primary, [RDF::DC11.relation, single, as_dom,
     {
       get: lambda do |dom|
         dom.at_css("relationship[type=primary]").content
       end
     }]
 
-  attribute :secondary, [
-    RDF::URI.new('http://purl.org/dc/elements/1.1/relation'),
-    only_one,
-    as_dom,
+  # eventually maybe do something like this:
+  # attribute :secondary, [RDF::DC11.relation, single, css("relationship[type=secondary]")]
+  attribute :secondary, [RDF::DC11.relation, single, as_dom,
     {
       get: lambda do |dom|
         dom.at_css("relationship[type=secondary]").content
