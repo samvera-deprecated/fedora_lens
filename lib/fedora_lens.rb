@@ -22,7 +22,7 @@ module FedoraLens
     self.defined_attributes = {}.with_indifferent_access
 
     def initialize(attributes = {})
-      @attributes = attributes
+      @attributes = attributes.with_indifferent_access
     end
   end
 
@@ -81,23 +81,13 @@ require 'fedora_lens/lenses'
 class TestClass
   include FedoraLens
   include FedoraLens::Lenses
-  attribute :title, [RDF::DC.title, Lenses.single]
+  attribute :title, [RDF::DC11.title, Lenses.single]
   attribute :mixinTypes, [RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
   attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"), Lenses.single]
 
-  attribute :primary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom,
-    {
-      get: lambda do |dom|
-        dom.at_css("relationship[type=primary]").content
-      end
-    }]
+  attribute :primary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom, Lenses.at_css("relationship[type=primary]")]
 
   # eventually maybe do something like this:
   # attribute :secondary, [RDF::DC11.relation, single, css("relationship[type=secondary]")]
-  attribute :secondary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom,
-    {
-      get: lambda do |dom|
-        dom.at_css("relationship[type=secondary]").content
-      end
-    }]
+  attribute :secondary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom, Lenses.at_css("relationship[type=secondary]")]
 end

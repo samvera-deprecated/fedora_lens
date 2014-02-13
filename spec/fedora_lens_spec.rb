@@ -5,8 +5,8 @@ describe FedoraLens do
 
   class TestClass
     include FedoraLens
-    attribute :title, [RDF::DC.title]
-    attribute :xml_title, [RDF::DC.title]
+    attribute :title, [RDF::DC11.title, Lenses.single]
+    attribute :xml_title, [RDF::DC11.title, Lenses.single]
   end
 
   # for ActiveModel::Lint::Tests
@@ -19,7 +19,8 @@ describe FedoraLens do
   describe ".find" do
     it "finds by a fedora path" do
       # TestClass.find('/rest/ee/89/7e/53/ee897e53-7953-4208-bee7-08c76379fce8').content eq "some content"
-      TestClass.find('/rest/node/to/update').content.must_equal "some content"
+      a = TestClass.find('/rest/node/to/update')
+      a.title.must_equal 'some-resource-title'
     end
   end
 

@@ -6,7 +6,8 @@ java -jar fcrepo-webapp-4.0.0-alpha-3-jetty-console.war
 ```
 
 ```ruby
-> load './fedora_lens.rb'
+> $LOAD_PATH << 'lib'
+> require 'fedora_lens'
 > a = TestClass.find('/rest/node/to/update')
 ```
 
