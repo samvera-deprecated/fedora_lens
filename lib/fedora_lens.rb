@@ -1,4 +1,6 @@
 require 'rdf'
+require 'rdf/turtle'
+require 'nokogiri'
 require 'active_model'
 require 'active_support/concern'
 require 'active_support/core_ext/object'
@@ -6,7 +8,7 @@ require 'active_support/core_ext/class/attribute'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/hash'
 
-module FedoraProjection
+module FedoraLens
   extend ActiveSupport::Concern
   HOST = "http://localhost:8080"
   mattr_accessor :connection
@@ -47,7 +49,7 @@ module FedoraProjection
           lambda {|*args| inner[outer[*args]]}
         end
         # acc[name] = path.first[:get].call(uri, graph)
-        acc[name] = gets.call(uri, graph)
+        acc[name] = gets.call([uri, graph])
         acc
       end
       self.new(attributes)
@@ -67,39 +69,23 @@ module FedoraProjection
 
     def build_lens(path_segment)
       if path_segment.is_a? RDF::URI
-        {
-          get: lambda do |uri, graph|
-            graph.query([uri, path_segment, nil]).map{|s| s.object.value}
-          end
-        }
+        Lenses.get_predicate(path_segment)
       else
         path_segment
       end
     end
-
-    def single
-      {
-        get: :first.to_proc, set: lambda{|x| [x]}
-      }
-    end
-
-    def as_dom
-      {
-        # TODO figure out a memoizing strategy so we don't parse multiple times
-        get: lambda {|xml| puts "parsing..."; Nokogiri::XML(xml)},
-        set: lambda {|doc| doc.to_xml}
-      }
-    end
   end
 end
 
+require 'fedora_lens/lenses'
 class TestClass
-  include FedoraProjection
-  attribute :title, [RDF::DC.title, single]
+  include FedoraLens
+  include FedoraLens::Lenses
+  attribute :title, [RDF::DC.title, Lenses.single]
   attribute :mixinTypes, [RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
-  attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"), single]
+  attribute :primaryType, [RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"), Lenses.single]
 
-  attribute :primary, [RDF::DC11.relation, single, as_dom,
+  attribute :primary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom,
     {
       get: lambda do |dom|
         dom.at_css("relationship[type=primary]").content
@@ -108,7 +94,7 @@ class TestClass
 
   # eventually maybe do something like this:
   # attribute :secondary, [RDF::DC11.relation, single, css("relationship[type=secondary]")]
-  attribute :secondary, [RDF::DC11.relation, single, as_dom,
+  attribute :secondary, [RDF::DC11.relation, Lenses.single, Lenses.as_dom,
     {
       get: lambda do |dom|
         dom.at_css("relationship[type=secondary]").content
