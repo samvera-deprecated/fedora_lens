@@ -30,7 +30,7 @@ module FedoraLens
         @attributes = data.with_indifferent_access
       elsif data.is_a? Ldp::Resource
         @orm = Ldp::Orm.new(data)
-        @attributes = Lenses.orm_to_hash(self.class.attribute_lenses)[:get].call(@orm).with_indifferent_access
+        @attributes = get_attributes_from_orm(@orm)
       else
         raise ArgumentError, "Argument must be a Hash or Ldp::Resource"
       end
@@ -50,12 +50,33 @@ module FedoraLens
     @attributes[key]
   end
 
+  def reload
+    @orm.reload
+    @attributes = get_attributes_from_orm(@orm)
+  end
+
   def save
+    @orm = self.class.orm_to_hash[:put].call(@orm, @attributes)
+    # Fedora errors out when you try to set the rdf:type
+    # see https://groups.google.com/forum/#!topic/fedora-tech/2lLFN4_1LTI
+    @orm.graph.delete([@orm.resource.subject_uri,
+                       RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+                       nil])
+    @orm.save
+  end
+
+  def save!
+    save || raise(RecordNotSaved)
+  end
+
+  private
+
+  def get_attributes_from_orm(orm)
+    self.class.orm_to_hash[:get].call(orm).with_indifferent_access
   end
 
   module ClassMethods
     def find(id)
-      uri = RDF::URI.parse(HOST + id)
       FedoraLens.connection ||= Ldp::Client.new(HOST)
       resource = Ldp::Resource.new(FedoraLens.connection, HOST + id)
       self.new(resource)
@@ -69,15 +90,19 @@ module FedoraLens
       define_method "#{name}=" do |value|
         @attributes[name] = value
       end
-      attribute_lenses = nil # force us to rebuild the aggregate_lens in case it was already built.
+      orm_to_hash = nil # force us to rebuild the aggregate_lens in case it was already built.
     end
 
-    def attribute_lenses
-      @attribute_lenses ||= defined_attributes.reduce({}) do |acc, pair|
-        name, path = pair
-        lens = path.reduce{|outer, inner| Lenses.compose(outer, inner)}
-        acc.merge(name => lens)
+    def orm_to_hash
+      if @orm_to_hash.nil?
+        aggregate_lens = defined_attributes.reduce({}) do |acc, pair|
+          name, path = pair
+          lens = path.reduce{|outer, inner| Lenses.compose(outer, inner)}
+          acc.merge(name => lens)
+        end
+        @orm_to_hash = Lenses.orm_to_hash(aggregate_lens)
       end
+      @orm_to_hash
     end
 
     def coerce_to_lens(path_segment)

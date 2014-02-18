@@ -37,6 +37,7 @@ module FedoraLens
               key, lens = pair
               lens[:put].call(orm, hash[key])
             end
+            orm
           end
         }
       end
@@ -62,10 +63,11 @@ module FedoraLens
             orm.value(predicate)
           end,
           put: lambda do |orm, values|
-            orm.delete([uri, predicate, nil])
+            orm.graph.delete([orm.resource.subject_uri, predicate, nil])
             values.each do |value|
-              orm.insert([uri, predicate, value])
+              orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
+            orm
           end
         }
       end
