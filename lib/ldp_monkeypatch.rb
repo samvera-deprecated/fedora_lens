@@ -1,4 +1,5 @@
 require 'ldp'
+require 'active_support/core_ext/object'
 module Ldp
   module Response
     def self.resource? raw_resp

@@ -9,6 +9,7 @@ require 'active_support/core_ext/object'
 require 'active_support/core_ext/class/attribute'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/hash'
+require 'fedora_lens/errors'
 
 module FedoraLens
   extend ActiveSupport::Concern
@@ -24,6 +25,7 @@ module FedoraLens
     self.defined_attributes = {}.with_indifferent_access
 
     attr_reader :attributes
+    attr_reader :orm
 
     def initialize(data = {})
       if data.is_a? Hash
@@ -51,18 +53,20 @@ module FedoraLens
   end
 
   def reload
-    @orm.reload
+    @orm = @orm.reload
     @attributes = get_attributes_from_orm(@orm)
   end
 
+  # FIXME this doesn't seem to return false on a save failure
   def save
     @orm = self.class.orm_to_hash[:put].call(@orm, @attributes)
     # Fedora errors out when you try to set the rdf:type
-    # see https://groups.google.com/forum/#!topic/fedora-tech/2lLFN4_1LTI
+    # see https://github.com/cbeer/ldp/issues/2
     @orm.graph.delete([@orm.resource.subject_uri,
                        RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
                        nil])
     @orm.save
+    @orm.last_response.success?
   end
 
   def save!
@@ -112,10 +116,20 @@ module FedoraLens
         path_segment
       end
     end
+
+    # def has_one(name, scope = nil, options = {})
+    #   ActiveRecord::Associations::Builder::HasOne.build(self, name, scope, options)
+    # end
   end
 end
 
 require 'fedora_lens/lenses'
+class TestRelated
+  include FedoraLens
+  include FedoraLens::Lenses
+  attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+end
+
 class TestClass
   include FedoraLens
   include FedoraLens::Lenses
@@ -126,7 +140,7 @@ class TestClass
     RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"),
     Lenses.single,
     Lenses.literal_to_string]
-  attribute :primary, [
+  attribute :primary_id, [
     RDF::DC11.relation,
     Lenses.single,
     Lenses.literal_to_string,
@@ -137,5 +151,10 @@ class TestClass
     Lenses.single,
     Lenses.literal_to_string,
     Lenses.as_dom,
-    Lenses.at_css("relationship[type=secondary]")]
+    Lenses.at_css("relationship[type=secondary]"),
+    # Lenses.load_model(TestRelated)
+    ]
+  # def self.generated_feature_methods
+  # end
+  # has_one :primary
 end

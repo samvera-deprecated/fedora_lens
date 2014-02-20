@@ -72,6 +72,18 @@ module FedoraLens
         }
       end
 
+      def load_model(klass)
+        {
+          get: lambda do |id|
+            klass.find(id)
+          end,
+          put: lambda do |id, model|
+            model.save
+            id
+          end
+        }
+      end
+
       def compose(outer, inner)
         {
           get: lambda do |source|

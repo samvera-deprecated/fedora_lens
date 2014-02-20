@@ -12,6 +12,7 @@ java -jar fcrepo-webapp-4.0.0-alpha-3-jetty-console.war
 ```
 
 ## To Do
+* get creates working
 * test any untested lenses
 * handle attribute updates to the graph
 * make .save work
@@ -20,4 +21,4 @@ java -jar fcrepo-webapp-4.0.0-alpha-3-jetty-console.war
 
 Future:
 * make a "lazy" lens
-* convert to more of a OO style?
+* convert to more of a OO style using Object.new or Module.new for the lenses?
