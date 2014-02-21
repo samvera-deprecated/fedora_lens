@@ -19,26 +19,43 @@ module FedoraLens
     #   compared with #== (defaults to the identity function)
     # @yieldparam [value or source]
     #   a value that will be compared
-    def test_lens(lens, source, value)
+    def test_lens(lens, source, value, &block)
+      test_lens_get_put(lens, source, &block)
+      test_lens_put_get(lens, source, value, &block)
+      test_lens_create_get(lens, value, &block)
+    end
+
+    def test_lens_get_put(lens, source)
       it "is well-behaved (GetPut)" do
-        converted = lens[:put].call(source, lens[:get].call(source))
+        converted = lens.put(source, lens.get(source))
         if block_given?
           yield(converted).must_equal yield(source)
         else
           converted.must_equal source
         end
       end
+    end
+
+    def test_lens_put_get(lens, source, value)
       it "is well-behaved (PutGet)" do
-        converted = lens[:get].call(lens[:put].call(source, value))
+        converted = lens.get(lens.put(source, value))
         if block_given?
           yield(converted).must_equal yield(value)
         else
           converted.must_equal value
         end
       end
-      # it "is well-behaved (CreateGet)" do
-      #   lens[:get].call(lens[:create].call(value)).must_equal value
-      # end
+    end
+
+    def test_lens_create_get(lens, value)
+      it "is well-behaved (CreateGet)" do
+        created = lens.get(lens.create(value))
+        if block_given?
+          yield(created).must_equal yield(value)
+        else
+          created.must_equal value
+        end
+      end
     end
   end
 end
