@@ -14,7 +14,10 @@ require 'fedora_lens/errors'
 module FedoraLens
   extend ActiveSupport::Concern
   HOST = "http://localhost:8080"
-  mattr_accessor :connection
+
+  def self.connection
+    @@connection ||= Ldp::Client.new(HOST)
+  end
 
   included do
     extend ActiveModel::Naming
@@ -29,6 +32,7 @@ module FedoraLens
 
     def initialize(data = {})
       if data.is_a? Hash
+        @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
         @attributes = data.with_indifferent_access
       elsif data.is_a? Ldp::Resource
         @orm = Ldp::Orm.new(data)
@@ -57,36 +61,47 @@ module FedoraLens
     @attributes = get_attributes_from_orm(@orm)
   end
 
-  # FIXME this doesn't seem to return false on a save failure
   def save
-    @orm = self.class.orm_to_hash[:put].call(@orm, @attributes)
-    # Fedora errors out when you try to set the rdf:type
-    # see https://github.com/cbeer/ldp/issues/2
-    @orm.graph.delete([@orm.resource.subject_uri,
-                       RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                       nil])
-    @orm.save
-    @orm.last_response.success?
+    @orm = self.class.orm_to_hash.put(@orm, @attributes)
+    if new_record?
+      self.class.create(orm)
+    else
+      # Fedora errors out when you try to set the rdf:type
+      # see https://github.com/cbeer/ldp/issues/2
+      @orm.graph.delete([@orm.resource.subject_uri,
+                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+                         nil])
+      @orm.save
+      @orm.last_response.success?
+    end
   end
 
   def save!
     save || raise(RecordNotSaved)
   end
 
+  def new_record?
+    !id.present?
+  end
+
+  def id
+    @orm.try(:resource).try(:subject_uri).try(:to_s)
+  end
+
   private
 
   def get_attributes_from_orm(orm)
-    self.class.orm_to_hash[:get].call(orm).with_indifferent_access
+    self.class.orm_to_hash.get(orm).with_indifferent_access
   end
 
   module ClassMethods
     def find(id)
-      FedoraLens.connection ||= Ldp::Client.new(HOST)
-      resource = Ldp::Resource.new(FedoraLens.connection, HOST + id)
+      resource = Ldp::Resource.new(FedoraLens.connection, HOST + '/rest' + id)
       self.new(resource)
     end
 
     def attribute(name, path, options={})
+      raise AttributeNotSupportedException if name.to_sym == :id
       defined_attributes[name] = path.map{|s| coerce_to_lens(s)}
       define_method name do
         @attributes[name]
@@ -97,11 +112,24 @@ module FedoraLens
       orm_to_hash = nil # force us to rebuild the aggregate_lens in case it was already built.
     end
 
+    def create(data)
+      if data.is_a? Hash
+        model = self.new(data)
+        model.save
+        model
+      elsif data.is_a? Ldp::Orm
+        data.resource.create
+        data
+      else
+        raise ArgumentError, "Argument must be a Hash or Ldp::Resource"
+      end
+    end
+
     def orm_to_hash
       if @orm_to_hash.nil?
         aggregate_lens = defined_attributes.reduce({}) do |acc, pair|
           name, path = pair
-          lens = path.reduce{|outer, inner| Lenses.compose(outer, inner)}
+          lens = path.reduce {|outer, inner| Lenses.compose(outer, inner)}
           acc.merge(name => lens)
         end
         @orm_to_hash = Lenses.orm_to_hash(aggregate_lens)
@@ -134,26 +162,26 @@ class TestClass
   include FedoraLens
   include FedoraLens::Lenses
   attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
-  attribute :mixinTypes, [
-    RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
-  attribute :primaryType, [
-    RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"),
-    Lenses.single,
-    Lenses.literal_to_string]
-  attribute :primary_id, [
-    RDF::DC11.relation,
-    Lenses.single,
-    Lenses.literal_to_string,
-    Lenses.as_dom,
-    Lenses.at_css("relationship[type=primary]")]
-  attribute :secondary, [
-    RDF::DC11.relation,
-    Lenses.single,
-    Lenses.literal_to_string,
-    Lenses.as_dom,
-    Lenses.at_css("relationship[type=secondary]"),
-    # Lenses.load_model(TestRelated)
-    ]
+  # attribute :mixinTypes, [
+  #   RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
+  # attribute :primaryType, [
+  #   RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"),
+  #   Lenses.single,
+  #   Lenses.literal_to_string]
+  # attribute :primary_id, [
+  #   RDF::DC11.relation,
+  #   Lenses.single,
+  #   Lenses.literal_to_string,
+  #   Lenses.as_dom,
+  #   Lenses.at_css("relationship[type=primary]")]
+  # attribute :secondary, [
+  #   RDF::DC11.relation,
+  #   Lenses.single,
+  #   Lenses.literal_to_string,
+  #   Lenses.as_dom,
+  #   Lenses.at_css("relationship[type=secondary]"),
+  #   # Lenses.load_model(TestRelated)
+  #   ]
   # def self.generated_feature_methods
   # end
   # has_one :primary

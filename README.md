@@ -6,9 +6,13 @@ java -jar fcrepo-webapp-4.0.0-alpha-3-jetty-console.war
 ```
 
 ```ruby
-> $LOAD_PATH << 'lib'
-> require 'fedora_lens'
-> a = TestClass.find('/rest/node/to/update')
+$LOAD_PATH << 'lib'
+require 'fedora_lens'
+load 'demo.rb'
+a = TestClass.find('/node/to/update')
+b = TestClass.new(title: "New resource")
+b.save
+c = TestClass.create(title: "created resource")
 ```
 
 ## To Do

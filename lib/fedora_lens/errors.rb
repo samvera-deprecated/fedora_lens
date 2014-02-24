@@ -3,4 +3,5 @@ module FedoraLens
   class FedoraLensError < StandardError; end
   # raised when a resource can't be saved
   class RecordNotSaved < FedoraLensError; end
+  class AttributeNotSupportedError < FedoraLensError; end
 end

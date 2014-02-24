@@ -54,5 +54,34 @@ module FedoraLens
                         Nokogiri::XML("<foo><bar>content</bar></foo>"),
                         "new content")
     end
+
+    describe ".get_predicate" do
+      let(:orm) do
+        graph = RDF::Graph.new
+        orm = Ldp::Orm.new(Ldp::Resource.new(nil, '', graph))
+        orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
+        orm
+      end
+      it "converts an Ldp::Orm to the value of the specified predicate" do
+        Lenses.get_predicate(RDF::DC11.title).get(orm).first.must_equal RDF::Literal.new("title")
+      end
+      it "sets the value of an Ldp::Orm for the specified predicate" do
+        Lenses.get_predicate(RDF::DC11.title).put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.must_equal RDF::Literal.new("new")
+      end
+      it "creates a new Ldp::Orm with the value for a specified predicate" do
+        converted = Lenses.get_predicate(RDF::DC11.title).create([RDF::Literal.new("title")])
+        converted.graph.dump(:ttl).must_equal orm.graph.dump(:ttl)
+      end
+      graph = RDF::Graph.new
+      orm = Ldp::Orm.new(Ldp::Resource.new(nil, '', graph))
+      orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
+      test_lens(Lenses.get_predicate(RDF::DC11.title), orm, [RDF::Literal.new("new title")]) do |v|
+        if v.is_a? Ldp::Orm
+          v.value(RDF::DC11.title)
+        else
+          v
+        end
+      end
+    end
   end
 end

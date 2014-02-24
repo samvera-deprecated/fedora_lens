@@ -26,7 +26,7 @@ module FedoraLens
     end
 
     def test_lens_get_put(lens, source)
-      it "is well-behaved (GetPut)" do
+      it "is well-behaved (GetPut: put(source, get(source)) == source)" do
         converted = lens.put(source, lens.get(source))
         if block_given?
           yield(converted).must_equal yield(source)
@@ -37,7 +37,7 @@ module FedoraLens
     end
 
     def test_lens_put_get(lens, source, value)
-      it "is well-behaved (PutGet)" do
+      it "is well-behaved (PutGet: get(put(source, value)) == value)" do
         converted = lens.get(lens.put(source, value))
         if block_given?
           yield(converted).must_equal yield(value)
@@ -48,7 +48,7 @@ module FedoraLens
     end
 
     def test_lens_create_get(lens, value)
-      it "is well-behaved (CreateGet)" do
+      it "is well-behaved (CreateGet: get(create(value)) == value)" do
         created = lens.get(lens.create(value))
         if block_given?
           yield(created).must_equal yield(value)
