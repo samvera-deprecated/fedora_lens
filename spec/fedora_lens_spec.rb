@@ -19,7 +19,7 @@ describe FedoraLens do
   describe ".find" do
     it "finds by a fedora path" do
       # TestClass.find('/rest/ee/89/7e/53/ee897e53-7953-4208-bee7-08c76379fce8')
-      a = TestClass.find('/rest/node/to/update')
+      a = TestClass.find('/node/to/update')
       a.title.must_equal 'some-resource-title'
     end
   end

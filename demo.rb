@@ -47,13 +47,13 @@ module Metadata
   def descMetadata
     {path: [RDF::URI.new('http://digitalcurationexperts.com/example#descMetadata'),
       FedoraLens::Lenses.single,
-      FedoraLens::Lenses.load_resource],
+      FedoraLens::Lenses.load_or_build_orm],
       type: GenericFileRdfDatastream}
   end
   def properties
     {path: [RDF::URI.new('http://digitalcurationexperts.com/example#properties'),
       FedoraLens::Lenses.single,
-      FedoraLens::Lenses.load_resource],
+      FedoraLens::Lenses.load_or_build_orm],
       type: PropertiesDatastream}
   end
   def has_attributes(*attributes)
@@ -72,11 +72,12 @@ class Example
   extend Metadata
   has_attributes :date_uploaded, datastream: descMetadata, multiple: true
   has_attributes :title, datastream: descMetadata, multiple: true
+  # has_attributes :relative_path, datastream: properties, multiple: false
 end
 
+# bundle console
 # $LOAD_PATH << 'lib'
 # load 'demo.rb'
-# a = Example.new(title: "Some Title", related_url: "http://google.com", date_uploaded: Date.today)
-# a.save
-# id = a.id
-# a = Example.find(id)
+# b = Example.new(title: ["Some Title"], date_uploaded: [Date.today.to_s], related_url: "http://google.com")
+# b.save
+# c = Example.find(b.id)

@@ -72,8 +72,6 @@ module FedoraLens
         Lens[
           get: lambda {|doc| doc.at_css(selector).content},
           put: lambda {|doc, value| 
-          require 'byebug'
-          debugger
           doc.at_css(selector).content = value; doc},
           # can't do a css create because we don't know the structure
         ]
@@ -113,11 +111,22 @@ module FedoraLens
         ]
       end
 
-      def load_resource
+      def load_or_build_orm
         Lens[
-          get: lambda do |id|
+          get: lambda do |uri|
+            if uri.present?
+              Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, uri.to_s))
+            else
+              Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+            end
           end,
-          put: lambda do |id, orm|
+          put: lambda do |uri, orm|
+            if orm.resource.subject.present?
+              orm.save
+            else
+              orm.resource.create
+            end
+            orm.resource.subject_uri
           end
         ]
       end
@@ -133,7 +142,7 @@ module FedoraLens
         ]
       end
 
-      def concat(first, second)
+      def zip(first, second)
       end
     end
   end
