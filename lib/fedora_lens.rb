@@ -175,7 +175,7 @@ class TestClass
           ""
         end
       end,
-      put: lambda do |doc, value| 
+      put: lambda do |doc, value|
         # TODO: create missing nodes
         # doc.at_css(selector).content = value; doc
         doc << Nokogiri::XML::Node.new("relationships", doc) if doc.root.nil?
