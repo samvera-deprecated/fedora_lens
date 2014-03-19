@@ -31,14 +31,13 @@ module FedoraLens
     attr_reader :orm
 
     def initialize(data = {})
-      if data.is_a? Hash
-        @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
-        @attributes = data.with_indifferent_access
-      elsif data.is_a? Ldp::Resource
+      if data.is_a? Ldp::Resource
         @orm = Ldp::Orm.new(data)
         @attributes = get_attributes_from_orm(@orm)
       else
-        raise ArgumentError, "Argument must be a Hash or Ldp::Resource"
+        data ||= {}
+        @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+        @attributes = data.with_indifferent_access
       end
     end
   end
@@ -117,16 +116,13 @@ module FedoraLens
     end
 
     def create(data)
-      if data.is_a? Hash
-        model = self.new(data)
-        model.save
-        model
-      elsif data.is_a? Ldp::Orm
+      if data.is_a? Ldp::Orm
         data.resource.create
-        data
-      else
-        raise ArgumentError, "Argument must be a Hash or Ldp::Resource"
+        return data
       end
+      model = self.new(data)
+      model.save
+      model
     end
 
     def orm_to_hash

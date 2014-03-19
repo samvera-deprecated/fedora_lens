@@ -17,9 +17,18 @@ describe FedoraLens do
   subject { TestClass.new }
 
   describe ".create" do
-    it "creates a resource" do
-      m = TestClass.create(title: "created resource")
-      TestClass.find(m.id).title.must_equal "created resource"
+    subject { TestClass.create(attributes) }
+    context "with a hash" do
+      let(:attributes) { { title: "created resource" } }
+      it "creates a resource" do
+        expect(TestClass.find(subject.id).title).to eq "created resource"
+      end
+    end
+    context "with nil" do
+      let(:attributes) { nil }
+      it "creates a resource" do
+        expect(TestClass.find(subject.id)).to be_kind_of TestClass
+      end
     end
   end
 
