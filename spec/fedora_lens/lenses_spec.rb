@@ -1,4 +1,4 @@
-require './spec/minitest_helper'
+require 'minitest_helper'
 require 'fedora_lens/lens_tests'
 
 module FedoraLens

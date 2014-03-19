@@ -1,4 +1,4 @@
-require './spec/minitest_helper'
+require 'minitest_helper'
 
 describe FedoraLens do
   include ActiveModel::Lint::Tests
