@@ -24,8 +24,8 @@ module FedoraLens
     include ActiveModel::Validations
     include ActiveModel::Conversion
 
-    class_attribute :defined_attributes
-    self.defined_attributes = {}.with_indifferent_access
+    class_attribute :attributes_as_lenses
+    self.attributes_as_lenses = {}.with_indifferent_access
 
     attr_reader :attributes
     attr_reader :orm
@@ -105,7 +105,7 @@ module FedoraLens
 
     def attribute(name, path, options={})
       raise AttributeNotSupportedException if name.to_sym == :id
-      defined_attributes[name] = path.map{|s| coerce_to_lens(s)}
+      attributes_as_lenses[name] = path.map{|s| coerce_to_lens(s)}
       define_method name do
         @attributes[name]
       end
@@ -127,7 +127,7 @@ module FedoraLens
 
     def orm_to_hash
       if @orm_to_hash.nil?
-        aggregate_lens = defined_attributes.reduce({}) do |acc, pair|
+        aggregate_lens = attributes_as_lenses.reduce({}) do |acc, pair|
           name, path = pair
           lens = path.reduce {|outer, inner| Lenses.compose(outer, inner)}
           acc.merge(name => lens)
