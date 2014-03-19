@@ -12,9 +12,7 @@ rake fedora:start
 
 ```ruby
 # bundle console
-$LOAD_PATH << 'lib'
-require 'fedora_lens'
-load 'demo.rb'
+require 'test_class'
 b = TestClass.new(title: "New resource")
 b.uri
 b.save

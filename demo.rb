@@ -74,10 +74,3 @@ class Example
   has_attributes :title, datastream: descMetadata, multiple: true
   # has_attributes :relative_path, datastream: properties, multiple: false
 end
-
-# bundle console
-# $LOAD_PATH << 'lib'
-# load 'demo.rb'
-# b = Example.new(title: ["Some Title"], date_uploaded: [Date.today.to_s], related_url: "http://google.com")
-# b.save
-# c = Example.find(b.id)
