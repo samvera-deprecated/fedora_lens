@@ -31,14 +31,17 @@ module FedoraLens
     attr_reader :orm
 
     def initialize(data = {})
-      if data.is_a? Ldp::Resource
-        @orm = Ldp::Orm.new(data)
-        @attributes = get_attributes_from_orm(@orm)
-      else
-        data ||= {}
-        @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
-        @attributes = data.with_indifferent_access
-      end
+      case data
+        when Ldp::Resource
+          @orm = Ldp::Orm.new(data)
+          @attributes = get_attributes_from_orm(@orm)
+        when NilClass, Hash
+          data ||= {}
+          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @attributes = data.with_indifferent_access
+        else
+          raise ArgumentError, "#{data.class} is not acceptable"
+        end
     end
   end
 
@@ -62,17 +65,7 @@ module FedoraLens
 
   def save
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
-    if new_record?
-      self.class.create(orm)
-    else
-      # Fedora errors out when you try to set the rdf:type
-      # see https://github.com/cbeer/ldp/issues/2
-      @orm.graph.delete([@orm.resource.subject_uri,
-                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                         nil])
-      @orm.save
-      @orm.last_response.success?
-    end
+    new_record? ? create_record : update_record
   end
 
   def save!
@@ -90,6 +83,25 @@ module FedoraLens
   def id
     URI.parse(uri).path.gsub(/\/rest/, '') if uri.present?
   end
+
+  protected
+
+    def create_record
+      orm.tap do |orm|
+        orm.resource.create
+      end
+    end
+
+    def update_record
+      # Fedora errors out when you try to set the rdf:type
+      # see https://github.com/cbeer/ldp/issues/2
+      orm.graph.delete([@orm.resource.subject_uri,
+                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+                         nil])
+      orm.save
+      orm.last_response.success?
+    end
+
 
   private
 
@@ -116,10 +128,6 @@ module FedoraLens
     end
 
     def create(data)
-      if data.is_a? Ldp::Orm
-        data.resource.create
-        return data
-      end
       model = self.new(data)
       model.save
       model
