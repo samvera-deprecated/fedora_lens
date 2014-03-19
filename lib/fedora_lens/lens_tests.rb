@@ -1,4 +1,3 @@
-# require 'minitest/autorun'
 module FedoraLens
   module LensTests
     # See page 6 of the manual for the Harmony language for a description
@@ -29,9 +28,9 @@ module FedoraLens
       it "is well-behaved (GetPut: put(source, get(source)) == source)" do
         converted = lens.put(source, lens.get(source))
         if block_given?
-          yield(converted).must_equal yield(source)
+          yield(converted).should eq yield(source)
         else
-          converted.must_equal source
+          converted.should eq source
         end
       end
     end
@@ -40,9 +39,9 @@ module FedoraLens
       it "is well-behaved (PutGet: get(put(source, value)) == value)" do
         converted = lens.get(lens.put(source, value))
         if block_given?
-          yield(converted).must_equal yield(value)
+          yield(converted).should eq yield(value)
         else
-          converted.must_equal value
+          converted.should eq value
         end
       end
     end
@@ -51,9 +50,9 @@ module FedoraLens
       it "is well-behaved (CreateGet: get(create(value)) == value)" do
         created = lens.get(lens.create(value))
         if block_given?
-          yield(created).must_equal yield(value)
+          yield(created).should eq yield(value)
         else
-          created.must_equal value
+          created.should eq value
         end
       end
     end

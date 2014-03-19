@@ -1,13 +1,10 @@
-require 'rake/testtask'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
 
 task :default => :ci
-task :spec => :test
-Rake::TestTask.new do |t|
-  t.libs << 'spec'
-  t.pattern = "spec/**/*_spec.rb"
-end
 
-task :ci => ['fedora:download', 'fedora:start', :test]
+task :ci => ['fedora:download', 'fedora:start', :spec]
 
 namespace :fedora do
   url = 'https://github.com/futures/fcrepo4/releases/download/fcrepo-4.0.0-alpha-3/'

@@ -1,4 +1,4 @@
-require 'minitest_helper'
+require 'spec_helper'
 
 describe FedoraLens do
   include ActiveModel::Lint::Tests
@@ -27,7 +27,7 @@ describe FedoraLens do
     it "saves a new resource" do
       m = TestClass.new(title: "created resource")
       m.save
-      TestClass.find(m.id).title.must_equal "created resource"
+      TestClass.find(m.id).title.should eq "created resource"
     end
 
     it "saves an updated resource" do
@@ -35,14 +35,14 @@ describe FedoraLens do
       m.reload
       m.title = "changed title"
       m.save
-      TestClass.find(m.id).title.must_equal "changed title"
+      TestClass.find(m.id).title.should eq "changed title"
     end
   end
 
   describe ".attribute" do
     it "makes a setter/getter" do
       subject.title = "foo"
-      subject.title.must_equal "foo"
+      subject.title.should eq "foo"
     end
 
     it "loads from rdf" do
