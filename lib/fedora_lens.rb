@@ -62,17 +62,7 @@ module FedoraLens
 
   def save
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
-    if new_record?
-      self.class.create(orm)
-    else
-      # Fedora errors out when you try to set the rdf:type
-      # see https://github.com/cbeer/ldp/issues/2
-      @orm.graph.delete([@orm.resource.subject_uri,
-                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                         nil])
-      @orm.save
-      @orm.last_response.success?
-    end
+    new_record? ? create_record : update_record
   end
 
   def save!
@@ -90,6 +80,23 @@ module FedoraLens
   def id
     URI.parse(uri).path.gsub(/\/rest/, '') if uri.present?
   end
+
+  protected
+
+    def create_record
+      self.class.create(orm)
+    end
+
+    def update_record
+      # Fedora errors out when you try to set the rdf:type
+      # see https://github.com/cbeer/ldp/issues/2
+      orm.graph.delete([@orm.resource.subject_uri,
+                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+                         nil])
+      orm.save
+      orm.last_response.success?
+    end
+
 
   private
 
