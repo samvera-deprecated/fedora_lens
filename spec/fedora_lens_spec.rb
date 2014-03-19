@@ -16,6 +16,14 @@ describe FedoraLens do
 
   subject { TestClass.new }
 
+  describe ".find" do
+    context "when the object doesn't exist" do
+      it "" do
+        expect{ TestClass.find('bahvejlavawwv') }.to raise_error Ldp::NotFound
+      end
+    end
+  end
+
   describe ".create" do
     subject { TestClass.create(attributes) }
     context "with a hash" do
