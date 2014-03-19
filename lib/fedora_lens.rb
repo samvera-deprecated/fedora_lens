@@ -31,14 +31,17 @@ module FedoraLens
     attr_reader :orm
 
     def initialize(data = {})
-      if data.is_a? Ldp::Resource
-        @orm = Ldp::Orm.new(data)
-        @attributes = get_attributes_from_orm(@orm)
-      else
-        data ||= {}
-        @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
-        @attributes = data.with_indifferent_access
-      end
+      case data
+        when Ldp::Resource
+          @orm = Ldp::Orm.new(data)
+          @attributes = get_attributes_from_orm(@orm)
+        when NilClass, Hash
+          data ||= {}
+          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @attributes = data.with_indifferent_access
+        else
+          raise ArgumentError, "#{data.class} is not acceptable"
+        end
     end
   end
 
@@ -84,7 +87,9 @@ module FedoraLens
   protected
 
     def create_record
-      self.class.create(orm)
+      orm.tap do |orm|
+        orm.resource.create
+      end
     end
 
     def update_record
@@ -123,10 +128,6 @@ module FedoraLens
     end
 
     def create(data)
-      if data.is_a? Ldp::Orm
-        data.resource.create
-        return data
-      end
       model = self.new(data)
       model.save
       model
