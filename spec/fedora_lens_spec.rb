@@ -5,8 +5,8 @@ describe FedoraLens do
 
   class TestClass
     include FedoraLens
-    attribute :title, [RDF::DC11.title, Lenses.single]
-    attribute :xml_title, [RDF::DC11.title, Lenses.single]
+    attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+    # attribute :xml_title, [RDF::DC11.title, Lenses.single]
   end
 
   # for ActiveModel::Lint::Tests
@@ -16,11 +16,26 @@ describe FedoraLens do
 
   subject { TestClass.new }
 
-  describe ".find" do
-    it "finds by a fedora path" do
-      # TestClass.find('/rest/ee/89/7e/53/ee897e53-7953-4208-bee7-08c76379fce8')
-      a = TestClass.find('/node/to/update')
-      a.title.must_equal 'some-resource-title'
+  describe ".create" do
+    it "creates a resource" do
+      m = TestClass.create(title: "created resource")
+      TestClass.find(m.id).title.must_equal "created resource"
+    end
+  end
+
+  describe ".save" do
+    it "saves a new resource" do
+      m = TestClass.new(title: "created resource")
+      m.save
+      TestClass.find(m.id).title.must_equal "created resource"
+    end
+
+    it "saves an updated resource" do
+      m = TestClass.create(title: "created resource")
+      m.reload
+      m.title = "changed title"
+      m.save
+      TestClass.find(m.id).title.must_equal "changed title"
     end
   end
 
