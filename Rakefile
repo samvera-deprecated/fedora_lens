@@ -19,7 +19,7 @@ namespace :fedora do
   desc "Start FC4"
   task :start do
     require 'childprocess'
-    process = ChildProcess.build("java", "-jar", download_path + filename)
+    process = ChildProcess.build("java", "-jar", download_path + filename, '--headless')
     process.detach = true
     process.start
   end
