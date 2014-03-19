@@ -1,8 +1,13 @@
 ## Usage
 
+Download Fedora 4:
+```bash
+rake fedora:download
+```
+
 Start Fedora:
 ```bash
-java -jar fcrepo-webapp-4.0.0-alpha-3-jetty-console.war
+rake fedora:start
 ```
 
 ```ruby

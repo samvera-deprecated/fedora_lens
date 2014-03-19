@@ -1,2 +1,4 @@
 /.bundle
+/fedora/*.war
+/fcrepo4-data/
 Gemfile.lock
