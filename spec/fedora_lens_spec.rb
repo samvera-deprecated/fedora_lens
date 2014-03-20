@@ -18,9 +18,25 @@ describe FedoraLens do
 
   describe ".find" do
     context "when the object doesn't exist" do
-      it "" do
+      it "should raise an error" do
         expect{ TestClass.find('bahvejlavawwv') }.to raise_error Ldp::NotFound
       end
+    end
+
+    context "when the object exists" do
+      let(:existing) { TestClass.create(title: "created resource") }
+      subject { TestClass.find(existing.id) }
+      it { should be_kind_of TestClass }
+      its(:id) { should eq existing.id }
+    end
+  end
+
+  describe ".delete" do
+    subject { TestClass.create(title: "created resource") }
+
+    it "should be deleted" do
+      subject.delete
+      expect{ TestClass.find(subject.id) }.to raise_error Ldp::NotFound
     end
   end
 

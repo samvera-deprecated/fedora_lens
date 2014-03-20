@@ -63,6 +63,10 @@ module FedoraLens
     @attributes = get_attributes_from_orm(@orm)
   end
 
+  def delete
+    @orm.resource.delete
+  end
+
   def save
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
     new_record? ? create_record : update_record
