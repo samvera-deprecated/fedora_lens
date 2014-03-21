@@ -31,23 +31,7 @@ module FedoraLens
     attr_reader :orm
 
     def initialize(subject_or_data = {}, data = nil)
-      @new_record = true
-      case subject_or_data
-        when Ldp::Resource
-          @orm = Ldp::Orm.new(subject_or_data)
-          @attributes = get_attributes_from_orm(@orm)
-        when NilClass, Hash
-          data = subject_or_data || {}
-          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
-          @attributes = data.with_indifferent_access
-        when String
-          raise "nope"
-          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
-          puts "Created #{@orm.resource.subject}"
-          @attributes = data.with_indifferent_access
-        else
-          raise ArgumentError, "#{data.class} is not acceptable"
-        end
+      init_core(subject_or_data, data)
     end
   end
 
@@ -106,6 +90,26 @@ module FedoraLens
   end
 
   protected
+    # This allows you to overide the initializer, but still use this behavior
+    def init_core(subject_or_data = {}, data = nil)
+      @new_record = true
+      case subject_or_data
+        when Ldp::Resource
+          @orm = Ldp::Orm.new(subject_or_data)
+          @attributes = get_attributes_from_orm(@orm)
+        when NilClass, Hash
+          data = subject_or_data || {}
+          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @attributes = data.with_indifferent_access
+        when String
+          raise "nope"
+          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
+          puts "Created #{@orm.resource.subject}"
+          @attributes = data.with_indifferent_access
+        else
+          raise ArgumentError, "#{data.class} is not acceptable"
+        end
+    end
 
     def create_record
       orm.resource.create
