@@ -30,14 +30,20 @@ module FedoraLens
     attr_reader :attributes
     attr_reader :orm
 
-    def initialize(data = {})
-      case data
+    def initialize(subject_or_data = {}, data = nil)
+      @new_record = true
+      case subject_or_data
         when Ldp::Resource
-          @orm = Ldp::Orm.new(data)
+          @orm = Ldp::Orm.new(subject_or_data)
           @attributes = get_attributes_from_orm(@orm)
         when NilClass, Hash
-          data ||= {}
+          data = subject_or_data || {}
           @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @attributes = data.with_indifferent_access
+        when String
+          raise "nope"
+          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
+          puts "Created #{@orm.resource.subject}"
           @attributes = data.with_indifferent_access
         else
           raise ArgumentError, "#{data.class} is not acceptable"
@@ -67,6 +73,17 @@ module FedoraLens
     @orm.resource.delete
   end
 
+  ##
+  # Create a child node
+  # @param [Hash] attributes the attributes to set on the child
+  # TODO this must know what kind of class it ought to create
+  def create(dsid, attributes = {})
+    raise ArgumentError, "dsid must be a string" unless dsid.is_a? String
+    resp = @orm.resource.client.post "#{@orm.resource.subject}/#{dsid}/fcr:content", 'foo', 'Content-Type' => 'text/plain'
+    raise "unexpected return value #{resp.status}" unless resp.status == 201
+    self.class.find("#{id}/#{dsid}")
+  end
+
   def save
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
     new_record? ? create_record : update_record
@@ -77,7 +94,7 @@ module FedoraLens
   end
 
   def new_record?
-    !id.present?
+    @new_record
   end
 
   def uri
@@ -91,9 +108,9 @@ module FedoraLens
   protected
 
     def create_record
-      orm.tap do |orm|
-        orm.resource.create
-      end
+      orm.resource.create
+      @new_record = false
+      true
     end
 
     def update_record

@@ -56,6 +56,17 @@ describe FedoraLens do
     end
   end
 
+  describe "child nodes" do
+    subject { TestClass.create( title: "created resource" ) }
+    it "should raise an error about a missing dsid" do
+      expect { subject.create(title: 'bar') }.to raise_error ArgumentError
+    end
+    it "should create one" do
+      obj = subject.create('descMetadata', title: 'bar')
+      expect(obj.id).to eq "#{subject.id}/descMetadata"
+    end
+  end
+
   describe ".save" do
     it "saves a new resource" do
       m = TestClass.new(title: "created resource")
