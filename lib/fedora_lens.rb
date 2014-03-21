@@ -102,6 +102,7 @@ module FedoraLens
           @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
           @attributes = data.with_indifferent_access
         when String
+          data ||= {}
           @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
           @attributes = data.with_indifferent_access
         else
@@ -134,8 +135,12 @@ module FedoraLens
 
   module ClassMethods
     def find(id)
-      resource = Ldp::Resource.new(FedoraLens.connection, HOST + '/rest' + id)
+      resource = Ldp::Resource.new(FedoraLens.connection, id_to_uri(id))
       self.new(resource)
+    end
+
+    def id_to_uri(id)
+      "#{HOST}/rest#{id}"
     end
 
     def attribute(name, path, options={})

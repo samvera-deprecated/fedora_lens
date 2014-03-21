@@ -81,6 +81,18 @@ describe FedoraLens do
       m.save
       TestClass.find(m.id).title.should eq "changed title"
     end
+
+    context "with a supplied id" do
+      subject { TestClass.new(TestClass.id_to_uri('foobar')) }
+
+      it "saves with that id" do
+        expect(subject.new_record?).to be_true
+        expect(subject.save).to be_true
+        expect(subject.new_record?).to be_false
+      end
+
+    end
+
   end
 
   describe ".attribute" do
