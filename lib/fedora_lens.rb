@@ -102,9 +102,7 @@ module FedoraLens
           @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
           @attributes = data.with_indifferent_access
         when String
-          raise "nope"
           @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
-          puts "Created #{@orm.resource.subject}"
           @attributes = data.with_indifferent_access
         else
           raise ArgumentError, "#{data.class} is not acceptable"
