@@ -57,17 +57,6 @@ module FedoraLens
     @orm.resource.delete
   end
 
-  ##
-  # Create a child node
-  # @param [Hash] attributes the attributes to set on the child
-  # TODO this must know what kind of class it ought to create
-  def create(dsid, attributes = {})
-    raise ArgumentError, "dsid must be a string" unless dsid.is_a? String
-    resp = @orm.resource.client.post "#{@orm.resource.subject}/#{dsid}/fcr:content", 'foo', 'Content-Type' => 'text/plain'
-    raise "unexpected return value #{resp.status}" unless resp.status == 201
-    self.class.find("#{id}/#{dsid}")
-  end
-
   def save
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
     new_record? ? create_record : update_record
