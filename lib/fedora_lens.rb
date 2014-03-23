@@ -29,10 +29,10 @@ module FedoraLens
 
     attr_reader :attributes
     attr_reader :orm
+  end
 
-    def initialize(subject_or_data = {}, data = nil)
-      init_core(subject_or_data, data)
-    end
+  def initialize(subject_or_data = {}, data = nil)
+    init_core(subject_or_data, data)
   end
 
   def persisted?()      false end
