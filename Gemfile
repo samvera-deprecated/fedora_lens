@@ -6,5 +6,5 @@ gem "ldp", github: 'cbeer/ldp'
 gem 'jettywrapper'
 
 group :development, :test do
-  gem 'byebug'
+  gem 'byebug' unless ENV['TRAVIS']
 end
