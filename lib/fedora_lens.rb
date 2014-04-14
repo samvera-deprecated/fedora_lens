@@ -13,6 +13,18 @@ require 'fedora_lens/errors'
 
 module FedoraLens
   extend ActiveSupport::Concern
+  extend ActiveSupport::Autoload
+  autoload :AttributeMethods
+
+  module AttributeMethods
+    extend ActiveSupport::Autoload
+
+    eager_autoload do
+      autoload :Read
+      autoload :Write
+    end
+  end
+
   HOST = "http://localhost:8983/fedora"
   #HOST = "http://localhost:8080"
   PATH = '/rest'
@@ -25,11 +37,8 @@ module FedoraLens
     extend ActiveModel::Naming
     include ActiveModel::Validations
     include ActiveModel::Conversion
+    include FedoraLens::AttributeMethods
 
-    class_attribute :attributes_as_lenses
-    self.attributes_as_lenses = {}.with_indifferent_access
-
-    attr_reader :attributes
     attr_reader :orm
   end
 
@@ -134,18 +143,6 @@ module FedoraLens
       "#{HOST}#{PATH}#{id}"
     end
 
-    def attribute(name, path, options={})
-      raise AttributeNotSupportedException if name.to_sym == :id
-      attributes_as_lenses[name] = path.map{|s| coerce_to_lens(s)}
-      define_method name do
-        @attributes[name]
-      end
-      define_method "#{name}=" do |value|
-        @attributes[name] = value
-      end
-      orm_to_hash = nil # force us to rebuild the aggregate_lens in case it was already built.
-    end
-
     def create(data)
       model = self.new(data)
       model.save
@@ -162,14 +159,6 @@ module FedoraLens
         @orm_to_hash = Lenses.orm_to_hash(aggregate_lens)
       end
       @orm_to_hash
-    end
-
-    def coerce_to_lens(path_segment)
-      if path_segment.is_a? RDF::URI
-        Lenses.get_predicate(path_segment)
-      else
-        path_segment
-      end
     end
 
     # def has_one(name, scope = nil, options = {})
