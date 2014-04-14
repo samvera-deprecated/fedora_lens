@@ -98,6 +98,10 @@ describe FedoraLens do
       subject.title.should eq "foo"
     end
 
+    it "should return nil if it hasn't been set" do
+      expect(subject.title).to be_nil
+    end
+
     it "loads from rdf" do
     end
 

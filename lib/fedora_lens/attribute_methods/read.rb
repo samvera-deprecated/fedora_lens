@@ -38,7 +38,7 @@ module FedoraLens
       # to a date object, like Date.new(2004, 12, 12)).
       def read_attribute(attr_name)
         name = attr_name.to_s
-        @attributes.fetch(name)
+        @attributes.fetch(name, nil)
       end
 
       private
