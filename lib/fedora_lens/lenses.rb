@@ -62,7 +62,7 @@ module FedoraLens
       def as_dom
         Lens[
           # TODO figure out a memoizing strategy so we don't parse multiple times
-          get: lambda {|xml| puts "parsing..."; Nokogiri::XML(xml)},
+          get: lambda {|xml| Nokogiri::XML(xml)},
           put: lambda {|xml, value| value.to_xml},
           create: lambda {|value| value.to_xml}
         ]

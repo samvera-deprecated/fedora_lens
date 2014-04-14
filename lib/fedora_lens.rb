@@ -77,8 +77,7 @@ module FedoraLens
   end
 
   def id
-    puts "URI #{uri}"
-    URI.parse(uri).path.sub(PATH, '') if uri.present?
+    URI.parse(uri).to_s.sub(HOST + PATH, '') if uri.present?
   end
 
   protected

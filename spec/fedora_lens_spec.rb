@@ -56,6 +56,14 @@ describe FedoraLens do
     end
   end
 
+  describe "#id" do
+    it "should not have 'fedora' in the id" do
+      m = TestClass.new('http://localhost:8983/fedora/rest/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
+      expect(m.id).to eq '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52'
+    end
+  end
+
+
   describe ".save" do
     it "saves a new resource" do
       m = TestClass.new(title: "created resource")
