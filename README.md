@@ -2,12 +2,13 @@
 
 Download Fedora 4:
 ```bash
-rake fedora:download
+mkdir -p jetty
+rake jetty:download
 ```
 
 Start Fedora:
 ```bash
-rake fedora:start
+rake jetty:start
 ```
 
 ```ruby
