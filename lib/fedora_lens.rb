@@ -13,7 +13,9 @@ require 'fedora_lens/errors'
 
 module FedoraLens
   extend ActiveSupport::Concern
-  HOST = "http://localhost:8080"
+  HOST = "http://localhost:8983/fedora"
+  #HOST = "http://localhost:8080"
+  PATH = '/rest'
 
   def self.connection
     @@connection ||= Ldp::Client.new(HOST)
@@ -75,7 +77,8 @@ module FedoraLens
   end
 
   def id
-    URI.parse(uri).path.gsub(/\/rest/, '') if uri.present?
+    puts "URI #{uri}"
+    URI.parse(uri).path.sub(PATH, '') if uri.present?
   end
 
   protected
@@ -129,7 +132,7 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      "#{HOST}/rest#{id}"
+      "#{HOST}#{PATH}#{id}"
     end
 
     def attribute(name, path, options={})

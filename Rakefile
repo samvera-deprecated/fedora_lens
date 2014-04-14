@@ -2,26 +2,15 @@ require 'rspec/core/rake_task'
 
 RSpec::Core::RakeTask.new(:spec)
 
-task :default => :ci
+ZIP_URL = "https://github.com/projecthydra/hydra-jetty/archive/fedora-4a4.zip"
+require 'jettywrapper'
 
-task :ci => ['fedora:download', 'fedora:start', :spec]
+task default: :ci
 
-namespace :fedora do
-  url = 'https://github.com/futures/fcrepo4/releases/download/fcrepo-4.0.0-alpha-3/'
-  filename = 'fcrepo-webapp-4.0.0-alpha-3-jetty-console.war'
-  download_path = "fedora/"
-  port = 8080
-
-  desc "Download FC4"
-  task :download do
-    system "curl -L #{url}#{filename} -o #{download_path}#{filename}"
+task ci: 'jetty:unzip' do
+  jetty_params = Jettywrapper.load_config('test')
+  error = Jettywrapper.wrap(jetty_params) do
+    Rake::Task[:spec].invoke
   end
-
-  desc "Start FC4"
-  task :start do
-    $LOAD_PATH << 'lib'
-    require 'fedora'
-    Fedora.start(download_path + filename)
-  end
-
+  raise "test failures: #{error}" if error
 end

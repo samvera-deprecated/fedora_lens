@@ -3,3 +3,5 @@
 /fcrepo4-data/
 Gemfile.lock
 tags
+jetty
+tmp
