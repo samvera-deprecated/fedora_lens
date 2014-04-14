@@ -73,6 +73,43 @@ module FedoraLens
       }
     end
 
+    
+    # Returns the value of the attribute identified by <tt>attr_name</tt> after it has been typecast (for example,
+    # "2004-12-12" in a date column is cast to a date object, like Date.new(2004, 12, 12)). It raises
+    # <tt>ActiveModel::MissingAttributeError</tt> if the identified attribute is missing.
+    #
+    # Alias for the <tt>read_attribute</tt> method.
+    #
+    #   class Person < ActiveRecord::Base
+    #     belongs_to :organization
+    #   end
+    #
+    #   person = Person.new(name: 'Francesco', age: '22')
+    #   person[:name] # => "Francesco"
+    #   person[:age]  # => 22
+    #
+    #   person = Person.select('id').first
+    #   person[:name]            # => ActiveModel::MissingAttributeError: missing attribute: name
+    #   person[:organization_id] # => ActiveModel::MissingAttributeError: missing attribute: organization_id
+    def [](attr_name)
+      read_attribute(attr_name) { |n| missing_attribute(n, caller) }
+    end
+    
+    # Updates the attribute identified by <tt>attr_name</tt> with the specified +value+.
+    # (Alias for the protected <tt>write_attribute</tt> method).
+    #
+    #   class Person
+    #     include FedoraLens
+    #   end
+    #
+    #   person = Person.new
+    #   person[:age] = '22'
+    #   person[:age] # => 22
+    #   person[:age] # => Fixnum
+    def []=(attr_name, value)
+      write_attribute(attr_name, value)
+    end
+
     module ClassMethods
       def initialize_generated_modules # :nodoc:
         @generated_attribute_methods = Module.new { extend Mutex_m }

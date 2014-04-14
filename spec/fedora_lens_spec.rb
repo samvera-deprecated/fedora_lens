@@ -95,11 +95,16 @@ describe FedoraLens do
   describe ".attribute" do
     it "makes a setter/getter" do
       subject.title = "foo"
-      subject.title.should eq "foo"
+      expect(subject.title).to eq "foo"
     end
 
     it "should return nil if it hasn't been set" do
       expect(subject.title).to be_nil
+    end
+
+    it "has a [] setter/getter" do
+      subject[:title] = 'foo'
+      expect(subject[:title]).to eq 'foo'
     end
 
     it "loads from rdf" do
