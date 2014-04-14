@@ -1,9 +1,9 @@
 ## Usage
 
-Download Fedora 4:
+Download and extract Fedora 4:
 ```bash
-mkdir -p jetty
 rake jetty:download
+rake jetty:unzip
 ```
 
 Start Fedora:
