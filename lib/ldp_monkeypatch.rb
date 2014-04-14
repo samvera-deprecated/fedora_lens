@@ -1,13 +1,5 @@
 require 'ldp'
-require 'active_support/core_ext/object'
 module Ldp
-  module Response
-    def self.resource? raw_resp
-      # workaround for a bug in fedora-commons, see https://github.com/cbeer/ldp/issues/1
-      raise "404 Not found #{raw_resp.env.url}" if raw_resp.status == 404
-      links(raw_resp).fetch("type", []).to_set.intersection([Ldp.resource.to_s, "http://www.w3.org/ns/ldp#Resource"]).present?
-    end
-  end
 
   class Resource
     def create
