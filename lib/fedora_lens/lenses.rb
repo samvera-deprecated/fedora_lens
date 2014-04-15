@@ -40,7 +40,7 @@ module FedoraLens
             source.map(&:to_s)
           end,
           put: lambda do |sources, values|
-            values.map do |value|
+            Array(values).map do |value|
               RDF::Literal.new(value)
             end
           end
@@ -97,7 +97,7 @@ module FedoraLens
           end,
           put: lambda do |orm, values|
             orm.graph.delete([orm.resource.subject_uri, predicate, nil])
-            (values || []).each do |value|
+            Array(values).each do |value|
               orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
             orm

@@ -23,17 +23,35 @@ module FedoraLens
     describe ".literals_to_strings" do
       let(:lens) { Lenses.literals_to_strings }
 
+      subject { lens.get(input) }
+
       describe "#get" do
-        subject { lens.get([RDF::Literal.new('foo'), RDF::Literal.new('bar')]) }
+        let(:input) { [RDF::Literal.new('foo'), RDF::Literal.new('bar')] }
         it "casts them to string" do
           expect(subject).to eq ['foo', 'bar']
+        end
+
+        context "with an empty result" do
+          let(:input) { [] }
+          it "casts them to string" do
+            expect(subject).to eq []
+          end
         end
       end
 
       describe "#put" do
-        subject { lens.put([RDF::Literal.new("foo"), RDF::Literal.new("bar")], ['quack', 'quix']) }
+        subject { lens.put([RDF::Literal.new("foo"), RDF::Literal.new("bar")], input) }
+        let(:input) { ['quack', 'quix'] }
         it "overwrites the items" do
           expect(subject).to eq [RDF::Literal.new("quack"), RDF::Literal.new("quix")]
+        end
+
+        context "with an empty set" do
+        let(:input) { nil }
+          it "casts them to string" do
+            expect(subject).to eq []
+             
+          end
         end
       end
     end
@@ -82,6 +100,9 @@ module FedoraLens
       end
       it "converts an Ldp::Orm to the value of the specified predicate" do
         Lenses.get_predicate(RDF::DC11.title).get(orm).first.should eq RDF::Literal.new("title")
+      end
+      it "gets an empty set" do
+        Lenses.get_predicate(RDF::DC11.description).get(orm).should eq []
       end
       it "sets the value of an Ldp::Orm for the specified predicate" do
         Lenses.get_predicate(RDF::DC11.title).put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.should eq RDF::Literal.new("new")
