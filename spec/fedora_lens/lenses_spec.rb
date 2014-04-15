@@ -20,6 +20,24 @@ module FedoraLens
       test_lens Lenses.single, [:one, :two], :foo
     end
 
+    describe ".literals_to_strings" do
+      let(:lens) { Lenses.literals_to_strings }
+
+      describe "#get" do
+        subject { lens.get([RDF::Literal.new('foo'), RDF::Literal.new('bar')]) }
+        it "casts them to string" do
+          expect(subject).to eq ['foo', 'bar']
+        end
+      end
+
+      describe "#put" do
+        subject { lens.put([RDF::Literal.new("foo"), RDF::Literal.new("bar")], ['quack', 'quix']) }
+        it "overwrites the items" do
+          expect(subject).to eq [RDF::Literal.new("quack"), RDF::Literal.new("quix")]
+        end
+      end
+    end
+
     describe ".as_dom" do
       it "converts xml to a Nokogiri::XML::Document" do
         xml = "<foo><bar>content</bar></foo>"

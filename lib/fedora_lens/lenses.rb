@@ -34,6 +34,19 @@ module FedoraLens
         ]
       end
 
+      def literals_to_strings
+        Lens[
+          get: lambda do |source|
+            source.map(&:to_s)
+          end,
+          put: lambda do |sources, values|
+            values.map do |value|
+              RDF::Literal.new(value)
+            end
+          end
+        ]
+      end
+
       def hash_update
         Lens[
           get: lambda {|hash| hash[key]},
