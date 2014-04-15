@@ -6,6 +6,7 @@ describe FedoraLens do
   class TestClass
     include FedoraLens
     attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+    attribute :size, [RDF::DC11.subject, Lenses.single, Lenses.literal_to_string]
     # attribute :xml_title, [RDF::DC11.title, Lenses.single]
   end
 
@@ -95,7 +96,9 @@ describe FedoraLens do
   describe ".attribute" do
     it "makes a setter/getter" do
       subject.title = "foo"
+      subject.size = "bar"
       expect(subject.title).to eq "foo"
+      expect(subject.size).to eq "bar"
     end
 
     it "should return nil if it hasn't been set" do
@@ -111,6 +114,20 @@ describe FedoraLens do
     end
 
     it "mixes rdf and xml" do
+    end
+
+    context "that are inherited" do
+      class TestSubclass < TestClass
+      end
+
+      subject { TestSubclass.new }
+
+      it "makes a setter/getter" do
+        subject.title = "foo"
+        subject.size = "bar"
+        expect(subject.title).to eq "foo"
+        expect(subject.size).to eq "bar"
+      end
     end
   end
 end
