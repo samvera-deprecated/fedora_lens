@@ -39,6 +39,18 @@ module FedoraLens
     included do
       class_attribute :attributes_as_lenses
       self.attributes_as_lenses = {}.with_indifferent_access
+      class << self
+        def inherited_with_lenses(kls) #:nodoc:
+          ## Do some inheritance logic that doesn't override Base.inherited
+          inherited_without_lenses kls
+          # each subclass should get a copy of the parent's attributes_as_lenses table,
+          # it should not add to the parent's definition table.
+          kls.attributes_as_lenses = kls.attributes_as_lenses.dup
+        end
+        alias_method_chain :inherited, :lenses
+      end
+
+
       
       initialize_generated_modules
       include Read

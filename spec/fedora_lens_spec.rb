@@ -17,6 +17,13 @@ describe FedoraLens do
 
   subject { TestClass.new }
 
+  # before do
+  #   require 'logger'
+  #   Ldp.logger = Logger.new(STDOUT).tap do |l|
+  #     l.level = Logger::DEBUG
+  #   end
+  # end
+
   describe ".find" do
     context "when the object doesn't exist" do
       it "should raise an error" do
@@ -43,12 +50,14 @@ describe FedoraLens do
 
   describe ".create" do
     subject { TestClass.create(attributes) }
+
     context "with a hash" do
       let(:attributes) { { title: "created resource" } }
       it "creates a resource" do
         expect(TestClass.find(subject.id).title).to eq "created resource"
       end
     end
+
     context "with nil" do
       let(:attributes) { nil }
       it "creates a resource" do
@@ -118,15 +127,31 @@ describe FedoraLens do
 
     context "that are inherited" do
       class TestSubclass < TestClass
+        attribute :description, [RDF::DC11.description, Lenses.single, Lenses.literal_to_string]
       end
 
       subject { TestSubclass.new }
 
-      it "makes a setter/getter" do
+      it "should have accessor methods defined by the parent" do
         subject.title = "foo"
-        subject.size = "bar"
+        subject.description = "bar"
         expect(subject.title).to eq "foo"
-        expect(subject.size).to eq "bar"
+        expect(subject.description).to eq "bar"
+      end
+
+      context "a sibling class" do
+        class TestAnotherSubclass < TestClass
+        end
+
+        subject { TestAnotherSubclass }
+
+        it "instances should not have accessor methods defined by the other sibling" do
+          expect { subject.new.description }.to raise_error NoMethodError
+        end
+
+        it "should not have attribute lenses defined by the other sibling" do
+          expect(TestAnotherSubclass.attributes_as_lenses.keys).to_not include "description"
+        end
       end
     end
   end

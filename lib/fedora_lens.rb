@@ -69,7 +69,6 @@ module FedoraLens
   end
 
   def save
-    @orm = self.class.orm_to_hash.put(@orm, @attributes)
     new_record? ? create_record : update_record
   end
 
@@ -111,12 +110,14 @@ module FedoraLens
     end
 
     def create_record
+      push_attributes_to_orm
       orm.resource.create
       @new_record = false
       true
     end
 
     def update_record
+      push_attributes_to_orm
       # Fedora errors out when you try to set the rdf:type
       # see https://github.com/cbeer/ldp/issues/2
       orm.graph.delete([@orm.resource.subject_uri,
@@ -128,6 +129,10 @@ module FedoraLens
 
 
   private
+
+  def push_attributes_to_orm
+    @orm = self.class.orm_to_hash.put(@orm, @attributes)
+  end
 
   def get_attributes_from_orm(orm)
     self.class.orm_to_hash.get(orm).with_indifferent_access
