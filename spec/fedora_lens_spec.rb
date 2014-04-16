@@ -152,21 +152,28 @@ describe FedoraLens do
         before do
           class TestClass2
             include FedoraLens
-            attribute :subject, [RDF::DC11.subject, Lenses.literals_to_strings], should_delete: lambda { |obj| obj == 'foo'  } 
-            attribute :subject2, [RDF::DC11.subject, Lenses.literals_to_strings], should_delete: lambda { |obj| obj == 'bar' }
+            attribute :subject, [RDF::DC11.subject, Lenses.literals_to_strings], select: lambda { |obj| obj == 'foo'  } 
+            attribute :subject2, [RDF::DC11.subject, Lenses.literals_to_strings], select: lambda { |obj| obj == 'bar' }
           end
         end
         after do
           Object.send(:remove_const, :TestClass2)
         end
 
-        subject { TestClass2.new('subject' => ['foo'], 'subject2' => ['bar']) }
+        let(:original_values) { { 'subject' => ['foo'], 'subject2' => ['bar'] } }
 
-        it "should have two separate assertions for the same predicate" do
-          subject.send(:push_attributes_to_orm)
+        subject { TestClass2.new(original_values) }
+        before { subject.send(:push_attributes_to_orm) }
+
+
+        it "should multiplex the separate attributes into one predicate" do
           expect(subject.orm.graph.dump(:ttl)).to eq( 
             "\n<> <http://purl.org/dc/elements/1.1/subject> \"foo\",\n" +
             "     \"bar\" .\n")
+        end
+
+        it "should demultiplex the predicate into separate attributes into one predicat" do
+          expect(subject.send(:get_attributes_from_orm, subject.orm)).to eq original_values
         end
       end
 

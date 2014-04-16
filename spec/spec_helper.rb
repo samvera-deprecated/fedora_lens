@@ -2,7 +2,6 @@ require 'bundler'
 require "bundler/setup"
 require 'fedora_lens'
 require 'fedora_lens/lenses'
-require 'byebug'
 
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true

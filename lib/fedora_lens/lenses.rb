@@ -115,15 +115,24 @@ module FedoraLens
 
       # @param [RDF::URI] predicate
       # @param [Hash] opts
-      # @option opts [Proc] :should_delete
+      # @option opts [Proc] :select a proc that takes the object and returns 
+      #                             true if it should be included in this subset
+      #                             of the predicates.  Used for storing
+      #                             different classes of objects under different
+      #                             attribute names even though they all use the
+      #                             same predicate.
       def get_predicate(predicate, opts = {})
         Lens[
           get: lambda do |orm|
-           # byebug
-            orm.value(predicate)
+            values = orm.value(predicate)
+            if opts[:select]
+              values.select { |val| opts[:select].call(val) }
+            else
+              values
+            end
           end,
           put: lambda do |orm, values|
-            empty_property(orm.graph, orm.resource.subject_uri, predicate, opts[:should_delete])
+            empty_property(orm.graph, orm.resource.subject_uri, predicate, opts[:select])
             Array(values).each do |value|
               orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
