@@ -70,14 +70,12 @@ module FedoraLens
       def orm_to_hash(name_to_lens)
         Lens[
           get: lambda do |orm|
-            name_to_lens.reduce({}) do |hash, pair|
-              key, lens = pair
+            name_to_lens.inject({}) do |hash, (key, lens)|
               hash.merge(key => lens.get(orm))
             end
           end,
           put: lambda do |orm, hash|
-            name_to_lens.each do |pair|
-              key, lens = pair
+            name_to_lens.each do |(key, lens)|
               lens.put(orm, hash[key])
             end
             orm
@@ -103,9 +101,12 @@ module FedoraLens
         ]
       end
 
-      def get_predicate(predicate)
+      # @param [RDF::URI] predicate
+      # @param [Hash] options
+      def get_predicate(predicate, options = {})
         Lens[
           get: lambda do |orm|
+           # byebug
             orm.value(predicate)
           end,
           put: lambda do |orm, values|
