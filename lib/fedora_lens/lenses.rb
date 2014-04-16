@@ -47,6 +47,19 @@ module FedoraLens
         ]
       end
 
+      def uris_to_ids
+        Lens[
+          get: lambda do |source|
+            source.map { |uri| URI.parse(uri).to_s.sub(HOST + PATH, '') }
+          end,
+          put: lambda do |sources, values|
+            Array(values).map do |value|
+              RDF::URI.new(HOST + PATH + value)
+            end
+          end
+        ]
+      end
+
       def hash_update
         Lens[
           get: lambda {|hash| hash[key]},

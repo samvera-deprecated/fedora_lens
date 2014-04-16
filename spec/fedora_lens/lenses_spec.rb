@@ -56,6 +56,49 @@ module FedoraLens
       end
     end
 
+    describe ".uris_to_ids" do
+      let(:lens) { Lenses.uris_to_ids }
+
+      let(:original) { [RDF::URI.new(HOST+PATH+'/id/123'), RDF::URI.new(HOST+PATH+'/id/321')] }
+
+      describe "#get" do
+        subject { lens.get(input) }
+
+        context "with exiting content" do
+          let(:input) { original  }
+          it "casts them to string" do
+            expect(subject).to eq ['/id/123', '/id/321']
+          end
+        end
+
+        context "with an empty result" do
+          let(:input) { [] }
+          it "casts them to string" do
+            expect(subject).to eq []
+          end
+        end
+      end
+
+      describe "#put" do
+        subject { lens.put(original, input) }
+
+        context "with new values " do
+          let(:input) { ['/id/777', '/id/888'] }
+          it "overwrites the items" do
+            expect(subject).to eq [RDF::URI.new(HOST+PATH+'/id/777'), RDF::URI.new(HOST+PATH+'/id/888')]
+          end
+        end
+
+        context "with an empty set" do
+          let(:input) { nil }
+          it "casts them to string" do
+            expect(subject).to eq []
+             
+          end
+        end
+      end
+    end
+
     describe ".as_dom" do
       it "converts xml to a Nokogiri::XML::Document" do
         xml = "<foo><bar>content</bar></foo>"
