@@ -26,5 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rdf-turtle', '~> 1.1.2'
   spec.add_dependency 'activemodel', '>= 4.0.2', "< 5.0"
   spec.add_dependency 'nokogiri', '~> 1.6.1'
-  spec.add_dependency 'ldp'
+  spec.add_dependency 'ldp', '0.0.3'
 end
