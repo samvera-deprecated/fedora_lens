@@ -101,16 +101,29 @@ module FedoraLens
         ]
       end
 
+      def empty_property(graph, rdf_subject, predicate, should_delete)
+        if should_delete
+          graph.query([rdf_subject, predicate, nil]).each_statement do |statement|
+            if should_delete.call(statement.object)
+              graph.delete(statement)
+            end
+          end
+        else
+          graph.delete([rdf_subject, predicate, nil])
+        end
+      end
+
       # @param [RDF::URI] predicate
-      # @param [Hash] options
-      def get_predicate(predicate, options = {})
+      # @param [Hash] opts
+      # @option opts [Proc] :should_delete
+      def get_predicate(predicate, opts = {})
         Lens[
           get: lambda do |orm|
            # byebug
             orm.value(predicate)
           end,
           put: lambda do |orm, values|
-            orm.graph.delete([orm.resource.subject_uri, predicate, nil])
+            empty_property(orm.graph, orm.resource.subject_uri, predicate, opts[:should_delete])
             Array(values).each do |value|
               orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
