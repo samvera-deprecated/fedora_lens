@@ -90,7 +90,7 @@ module FedoraLens
         end
 
         context "with an empty set" do
-          let(:input) { nil }
+          let(:input) { [nil] }
           it "casts them to string" do
             expect(subject).to eq []
              

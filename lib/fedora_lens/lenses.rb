@@ -53,7 +53,7 @@ module FedoraLens
             source.map { |uri| URI.parse(uri).to_s.sub(HOST + PATH, '') }
           end,
           put: lambda do |sources, values|
-            Array(values).map do |value|
+            Array(values).compact.map do |value|
               RDF::URI.new(HOST + PATH + value)
             end
           end
