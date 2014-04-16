@@ -152,8 +152,19 @@ describe FedoraLens do
         before do
           class TestClass2
             include FedoraLens
-            attribute :subject, [RDF::DC11.subject, Lenses.literals_to_strings], select: lambda { |obj| obj == 'foo'  } 
-            attribute :subject2, [RDF::DC11.subject, Lenses.literals_to_strings], select: lambda { |obj| obj == 'bar' }
+
+            class << self
+              def only_foos
+                lambda { |obj| obj == 'foo' }
+              end
+
+              def only_bars
+                lambda { |obj| obj == 'bar' }
+              end
+            end
+
+            attribute :subject, [Lenses.get_predicate(RDF::DC11.subject, select: only_foos), Lenses.literals_to_strings]
+            attribute :subject2, [Lenses.get_predicate(RDF::DC11.subject, select: only_bars), Lenses.literals_to_strings]
           end
         end
         after do

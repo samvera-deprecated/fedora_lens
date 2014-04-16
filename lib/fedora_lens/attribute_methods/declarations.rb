@@ -19,17 +19,17 @@ module FedoraLens
       end
 
       module ClassMethods
-        def attribute(name, path, options={})
+        def attribute(name, path)
           raise AttributeNotSupportedException if name.to_sym == :id
-          attributes_as_lenses[name] = path.map{|s| coerce_to_lens(s, options)}
+          attributes_as_lenses[name] = path.map{|s| coerce_to_lens(s)}
           generate_method(name)
           orm_to_hash = nil # force us to rebuild the aggregate_lens in case it was already built.
         end
 
         private
-          def coerce_to_lens(path_segment, options)
+          def coerce_to_lens(path_segment)
             if path_segment.is_a? RDF::URI
-              Lenses.get_predicate(path_segment, options)
+              Lenses.get_predicate(path_segment)
             else
               path_segment
             end
