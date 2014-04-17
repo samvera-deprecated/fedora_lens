@@ -17,7 +17,7 @@ describe FedoraLens do
   # end
 
 
-  describe "context with a simple class" do
+  context "with a simple class" do
     before do
       class TestClass
         include FedoraLens
@@ -107,6 +107,19 @@ describe FedoraLens do
 
       end
     end
+
+    describe "id_to_uri" do
+      subject { TestClass.id_to_uri(id) }
+      context "without a leading slash" do
+        let(:id) { 'test' }
+        it { should eq 'http://localhost:8983/fedora/rest/test' }
+      end
+      context "with a leading slash" do
+        let(:id) { '/test' }
+        it { should eq 'http://localhost:8983/fedora/rest/test' }
+      end
+    end
+
   end
 
   context "with a class that has many attributes" do

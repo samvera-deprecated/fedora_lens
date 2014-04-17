@@ -146,7 +146,7 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      "#{HOST}#{PATH}#{id}"
+      "#{HOST}#{PATH}" + (id.start_with?('/') ? id : '/' + id)
     end
 
     def uri_to_id(uri)
