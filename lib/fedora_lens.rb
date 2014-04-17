@@ -25,9 +25,8 @@ module FedoraLens
     end
   end
 
-  HOST = "http://localhost:8983/fedora"
+  HOST = "http://localhost:8983/fedora/rest"
   #HOST = "http://localhost:8080"
-  PATH = '/rest'
 
   def self.connection
     @@connection ||= Ldp::Client.new(HOST)
@@ -144,11 +143,11 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      "#{HOST}#{PATH}" + (id.start_with?('/') ? id : '/' + id)
+      HOST + (id.start_with?('/') ? id : '/' + id)
     end
 
     def uri_to_id(uri)
-      uri.to_s.sub(HOST + PATH, '')
+      uri.to_s.sub(HOST, '')
     end
 
     def create(data)

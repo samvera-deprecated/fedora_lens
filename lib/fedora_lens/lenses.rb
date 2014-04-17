@@ -50,11 +50,11 @@ module FedoraLens
       def uris_to_ids
         Lens[
           get: lambda do |source|
-            source.map { |uri| URI.parse(uri).to_s.sub(HOST + PATH, '') }
+            source.map { |uri| URI.parse(uri).to_s.sub(HOST, '') }
           end,
           put: lambda do |sources, values|
             Array(values).compact.map do |value|
-              RDF::URI.new(HOST + PATH + value)
+              RDF::URI.new(HOST + value)
             end
           end
         ]
