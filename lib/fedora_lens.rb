@@ -86,7 +86,7 @@ module FedoraLens
   end
 
   def id
-    URI.parse(uri).to_s.sub(HOST + PATH, '') if uri.present?
+    self.class.uri_to_id(URI.parse(uri)) if uri.present?
   end
 
   protected
@@ -147,6 +147,10 @@ module FedoraLens
 
     def id_to_uri(id)
       "#{HOST}#{PATH}#{id}"
+    end
+
+    def uri_to_id(uri)
+      uri.to_s.sub(HOST + PATH, '')
     end
 
     def create(data)
