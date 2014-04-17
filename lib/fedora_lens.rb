@@ -1,6 +1,5 @@
 require 'rdf'
 require 'ldp'
-require 'ldp_monkeypatch'
 require 'rdf/turtle'
 require 'nokogiri'
 require 'active_model'
@@ -94,16 +93,16 @@ module FedoraLens
     def init_core(subject_or_data = {}, data = nil)
       @new_record = true
       case subject_or_data
-        when Ldp::Resource
+        when Ldp::Resource::RdfSource
           @orm = Ldp::Orm.new(subject_or_data)
           @attributes = get_attributes_from_orm(@orm)
         when NilClass, Hash
           data = subject_or_data || {}
-          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new))
           @attributes = data.with_indifferent_access
         when String
           data ||= {}
-          @orm = Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
+          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, subject_or_data, RDF::Graph.new))
           @attributes = data.with_indifferent_access
         else
           raise ArgumentError, "#{data.class} is not acceptable"
@@ -112,7 +111,7 @@ module FedoraLens
 
     def create_record
       push_attributes_to_orm
-      orm.resource.create
+      @orm = orm.create
       @new_record = false
       true
     end
@@ -125,7 +124,6 @@ module FedoraLens
                          RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
                          nil])
       orm.save
-      orm.last_response.success?
     end
 
 
@@ -141,7 +139,7 @@ module FedoraLens
 
   module ClassMethods
     def find(id)
-      resource = Ldp::Resource.new(FedoraLens.connection, id_to_uri(id))
+      resource = Ldp::Resource::RdfSource.new(FedoraLens.connection, id_to_uri(id))
       self.new(resource)
     end
 

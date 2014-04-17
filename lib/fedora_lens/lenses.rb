@@ -139,7 +139,7 @@ module FedoraLens
             orm
           end,
           create: lambda do |values|
-            orm = Ldp::Orm.new(Ldp::Resource.new(nil, '', RDF::Graph.new))
+            orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(nil, '', RDF::Graph.new))
             values.each do |value|
               orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
@@ -164,9 +164,9 @@ module FedoraLens
         Lens[
           get: lambda do |uri|
             if uri.present?
-              Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, uri.to_s))
+              Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, uri.to_s))
             else
-              Ldp::Orm.new(Ldp::Resource.new(FedoraLens.connection, nil, RDF::Graph.new))
+              Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new))
             end
           end,
           put: lambda do |uri, orm|

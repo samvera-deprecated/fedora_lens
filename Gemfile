@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'ldp', github: 'cbeer/ldp'
 gem 'jettywrapper'
 
 group :development, :test do

@@ -137,7 +137,7 @@ module FedoraLens
     describe ".get_predicate" do
       let(:orm) do
         graph = RDF::Graph.new
-        orm = Ldp::Orm.new(Ldp::Resource.new(nil, '', graph))
+        orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(nil, '', graph))
         orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
         orm
       end
@@ -155,7 +155,7 @@ module FedoraLens
         converted.graph.dump(:ttl).should eq orm.graph.dump(:ttl)
       end
       graph = RDF::Graph.new
-      orm = Ldp::Orm.new(Ldp::Resource.new(nil, '', graph))
+      orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(nil, '', graph))
       orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
       test_lens(Lenses.get_predicate(RDF::DC11.title), orm, [RDF::Literal.new("new title")]) do |v|
         if v.is_a? Ldp::Orm
