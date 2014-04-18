@@ -136,33 +136,48 @@ module FedoraLens
 
     describe ".get_predicate" do
       let(:orm) do
-        graph = RDF::Graph.new
-        orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(nil, '', graph))
-        orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
-        orm
+        Ldp::Orm.new(resource).tap do |orm|
+          orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "new title"])
+        end
       end
+
+      let(:resource) { Ldp::Resource::RdfSource.new(mock_conn, '', RDF::Graph.new) } 
+      let(:mock_conn) { double }
+      before { resource.stub(new?: true) }
+      subject { Lenses.get_predicate(RDF::DC11.title) }
+
+      let(:value) { [RDF::Literal.new("new title")] }
+
       it "converts an Ldp::Orm to the value of the specified predicate" do
-        Lenses.get_predicate(RDF::DC11.title).get(orm).first.should eq RDF::Literal.new("title")
+        subject.get(orm).first.should eq value.first 
       end
+
       it "gets an empty set" do
         Lenses.get_predicate(RDF::DC11.description).get(orm).should eq []
       end
+
+      it "is well-behaved (PutGet: get(put(source, value)) == value)" do
+        converted = subject.get(subject.put(orm, value))
+        expect(converted).to eq value
+      end
+
       it "sets the value of an Ldp::Orm for the specified predicate" do
-        Lenses.get_predicate(RDF::DC11.title).put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.should eq RDF::Literal.new("new")
+        subject.put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.should eq RDF::Literal.new("new")
       end
+
+      it "is well-behaved (GetPut: put(source, get(source)) == source)" do
+        converted = subject.put(orm, subject.get(orm))
+        expect(converted).to eq orm
+      end
+
       it "creates a new Ldp::Orm with the value for a specified predicate" do
-        converted = Lenses.get_predicate(RDF::DC11.title).create([RDF::Literal.new("title")])
-        converted.graph.dump(:ttl).should eq orm.graph.dump(:ttl)
+        converted = subject.create(value)
+        converted.graph.should eq orm.graph
       end
-      graph = RDF::Graph.new
-      orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(nil, '', graph))
-      orm.graph.insert([orm.resource.subject_uri, RDF::DC11.title, "title"])
-      test_lens(Lenses.get_predicate(RDF::DC11.title), orm, [RDF::Literal.new("new title")]) do |v|
-        if v.is_a? Ldp::Orm
-          v.value(RDF::DC11.title)
-        else
-          v
-        end
+
+      it "is well-behaved (CreateGet: get(create(value)) == value)" do
+        created = subject.get(subject.create(value))
+        expect(created).to eq value
       end
     end
   end
