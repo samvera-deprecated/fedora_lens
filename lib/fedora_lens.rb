@@ -115,7 +115,7 @@ module FedoraLens
 
     def update_record
       push_attributes_to_orm
-      orm.save!
+      orm.save
     end
 
 
