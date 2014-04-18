@@ -76,7 +76,7 @@ module FedoraLens
   end
 
   def new_record?
-    @new_record
+    @orm.resource.new?
   end
 
   def uri
@@ -90,7 +90,6 @@ module FedoraLens
   protected
     # This allows you to overide the initializer, but still use this behavior
     def init_core(subject_or_data = {}, data = nil)
-      @new_record = true
       case subject_or_data
         when Ldp::Resource::RdfSource
           @orm = Ldp::Orm.new(subject_or_data)
@@ -111,7 +110,6 @@ module FedoraLens
     def create_record
       push_attributes_to_orm
       @orm = orm.create
-      @new_record = false
       true
     end
 
