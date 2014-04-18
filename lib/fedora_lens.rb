@@ -117,12 +117,7 @@ module FedoraLens
 
     def update_record
       push_attributes_to_orm
-      # Fedora errors out when you try to set the rdf:type
-      # see https://github.com/cbeer/ldp/issues/2
-      orm.graph.delete([@orm.resource.subject_uri,
-                         RDF::URI.new("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                         nil])
-      orm.save
+      orm.save!
     end
 
 
