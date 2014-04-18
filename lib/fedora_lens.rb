@@ -132,6 +132,7 @@ module FedoraLens
   module ClassMethods
     def find(id)
       resource = Ldp::Resource::RdfSource.new(FedoraLens.connection, id_to_uri(id))
+      raise Ldp::NotFound if resource.new?
       self.new(resource)
     end
 
