@@ -152,8 +152,8 @@ module FedoraLens
 
     def orm_to_hash
       if @orm_to_hash.nil?
-        aggregate_lens = attributes_as_lenses.inject({}) do |acc, (name, path)|
-          lens = path.inject {|outer, inner| Lenses.compose(outer, inner)}
+        aggregate_lens = attributes_as_lenses.reduce({}) do |acc, (name, path)|
+          lens = path.reduce {|outer, inner| Lenses.compose(outer, inner)}
           acc.merge(name => lens)
         end
         @orm_to_hash = Lenses.orm_to_hash(aggregate_lens)

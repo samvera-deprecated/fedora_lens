@@ -30,7 +30,8 @@ module FedoraLens
             else
               RDF::Literal.new(value)
             end
-          end
+          end,
+          create: lambda {|value| RDF::Literal.new(value)}
         ]
       end
 
@@ -42,6 +43,11 @@ module FedoraLens
           put: lambda do |sources, values|
             Array(values).map do |value|
               RDF::Literal.new(value)
+            end
+          end,
+          create: lambda do |values|
+            Array(values).map do |v|
+              RDF::Literal.new(v)
             end
           end
         ]
@@ -56,25 +62,34 @@ module FedoraLens
             Array(values).compact.map do |value|
               RDF::URI.new(HOST + value)
             end
+          end,
+          create: lambda do |values|
+            Array(values).compact.map do |value|
+              RDF::URI.new(HOST + value)
+            end
           end
-        ]
-      end
-
-      def hash_update
-        Lens[
-          get: lambda {|hash| hash[key]},
-          put: lambda {|hash, pair| hash.merge(pair[0] => pair[1])}
         ]
       end
 
       def orm_to_hash(name_to_lens)
         Lens[
           get: lambda do |orm|
-            name_to_lens.inject({}) do |hash, (key, lens)|
+            name_to_lens.reduce({}) do |hash, (key, lens)|
               hash.merge(key => lens.get(orm))
             end
           end,
           put: lambda do |orm, hash|
+            unexpected = hash.keys - name_to_lens.keys
+            raise ArgumentError.new("Unexpected keys for put: #{unexpected}") if unexpected.present?
+            name_to_lens.each do |(key, lens)|
+              lens.put(orm, hash[key])
+            end
+            orm
+          end,
+          create: lambda do |hash|
+            unexpected = hash.keys - name_to_lens.keys
+            raise ArgumentError.new("Unexpected keys for put: #{unexpected}") if unexpected.present?
+            orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, '', RDF::Graph.new))
             name_to_lens.each do |(key, lens)|
               lens.put(orm, hash[key])
             end
@@ -95,8 +110,7 @@ module FedoraLens
       def at_css(selector)
         Lens[
           get: lambda {|doc| doc.at_css(selector).content},
-          put: lambda {|doc, value| 
-          doc.at_css(selector).content = value; doc},
+          put: lambda {|doc, value| doc.at_css(selector).content = value; doc},
           # can't do a css create because we don't know the structure
         ]
       end
@@ -148,38 +162,6 @@ module FedoraLens
         ]
       end
 
-      def load_model(klass)
-        Lens[
-          get: lambda do |id|
-            klass.find(id)
-          end,
-          put: lambda do |id, model|
-            model.save
-            id
-          end
-        ]
-      end
-
-      def load_or_build_orm
-        Lens[
-          get: lambda do |uri|
-            if uri.present?
-              Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, uri.to_s))
-            else
-              Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new))
-            end
-          end,
-          put: lambda do |uri, orm|
-            if orm.resource.subject.present?
-              orm.save
-            else
-              orm.resource.create
-            end
-            orm.resource.subject_uri
-          end
-        ]
-      end
-
       def compose(outer, inner)
         Lens[
           get: lambda do |source|
@@ -187,11 +169,11 @@ module FedoraLens
           end,
           put: lambda do |source, value|
             outer.put(source, inner.put(outer.get(source), value))
+          end,
+          create: lambda do |value|
+            outer.create(inner.create(value))
           end
         ]
-      end
-
-      def zip(first, second)
       end
     end
   end
