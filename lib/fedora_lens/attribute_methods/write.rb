@@ -21,10 +21,7 @@ module FedoraLens
       end
 
       def write_attribute(attribute_name, value)
-        #column = column_for_attribute(attribute_name)
-        column = true # TODO check that attribute_name is valid
-        
-        if column 
+        if attributes_as_lenses.key?(attribute_name) 
           @attributes[attribute_name] = value
         else
           raise ActiveModel::MissingAttributeError, "can't write unknown attribute `#{attribute_name}'"
