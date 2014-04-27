@@ -1,15 +1,15 @@
 require 'active_support/core_ext/hash'
 
 module FedoraLens
-  class Lens < ActiveSupport::HashWithIndifferentAccess
+  class Lens
     def get(source)
-      self[:get].call(source)
+      raise NotImplementedError.new
     end
     def put(source, value)
-      self[:put].call(source, value)
+      raise NotImplementedError.new
     end
     def create(value)
-      self[:create].call(value)
+      raise NotImplementedError.new
     end
   end
 end

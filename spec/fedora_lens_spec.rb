@@ -21,7 +21,7 @@ describe FedoraLens do
     before do
       class TestClass
         include FedoraLens
-        attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+        attribute :title, [RDF::DC11.title, Lenses.first, Lenses.literal_to_string]
       end
     end
 
@@ -128,8 +128,8 @@ describe FedoraLens do
     before do
       class TestClass
         include FedoraLens
-        attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
-        attribute :subject, [RDF::DC11.subject, Lenses.single, Lenses.literal_to_string]
+        attribute :title, [RDF::DC11.title, Lenses.first, Lenses.literal_to_string]
+        attribute :subject, [RDF::DC11.subject, Lenses.first, Lenses.literal_to_string]
       end
     end
 
@@ -206,7 +206,7 @@ describe FedoraLens do
       context "that are inherited" do
         before do
           class TestSubclass < TestClass
-            attribute :description, [RDF::DC11.description, Lenses.single, Lenses.literal_to_string]
+            attribute :description, [RDF::DC11.description, Lenses.first, Lenses.literal_to_string]
           end
         end
         after do

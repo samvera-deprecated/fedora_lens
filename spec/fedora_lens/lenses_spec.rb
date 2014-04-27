@@ -5,17 +5,23 @@ module FedoraLens
   describe Lenses do
     include LensTests
 
-    describe ".single" do
+    describe ".first" do
       it "gets the first item" do
+        Lenses.first.get([:first, :second]).should eq :first
         Lenses.single.get([:first, :second]).should eq :first
       end
       it "sets the first item" do
+        Lenses.first.put([:first, :second], :changed).should eq [:changed, :second]
         Lenses.single.put([:first, :second], :changed).should eq [:changed, :second]
       end
       it "creates an item in an array" do
+        Lenses.first.create(:value).should eq [:value]
         Lenses.single.create(:value).should eq [:value]
       end
       it "obeys lens laws" do
+        check_laws Lenses.first, [], :foo
+        check_laws Lenses.first, [:one], :foo
+        check_laws Lenses.first, [:one, :two], :foo
         check_laws Lenses.single, [], :foo
         check_laws Lenses.single, [:one], :foo
         check_laws Lenses.single, [:one, :two], :foo
@@ -257,7 +263,7 @@ module FedoraLens
     end
 
     describe ".compose" do
-      let(:lens) { Lenses.compose(Lenses.single, Lenses.literal_to_string) }
+      let(:lens) { Lenses.compose(Lenses.first, Lenses.literal_to_string) }
       it "obeys lens laws" do
         check_laws lens, [], 'foo'
         check_laws lens, [RDF::Literal.new('one')], 'foo'
