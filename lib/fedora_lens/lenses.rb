@@ -13,7 +13,7 @@ module FedoraLens
     # Instead, we're just adding the helper functions to a simple hash.
 
     class << self
-      class First
+      class First < Lens
         def get(source)
           source.first
         end
@@ -33,7 +33,7 @@ module FedoraLens
         First.new
       end
 
-      class LiteralToString
+      class LiteralToString < Lens
         def get(source)
           source.to_s
         end
@@ -52,7 +52,7 @@ module FedoraLens
         LiteralToString.new
       end
 
-      class LiteralsToStrings
+      class LiteralsToStrings < Lens
         def get(sources)
           sources.map(&:to_s)
         end
@@ -69,7 +69,7 @@ module FedoraLens
         LiteralsToStrings.new
       end
 
-      class UrisToIds
+      class UrisToIds < Lens
         def get(sources)
           sources.map { |uri| URI.parse(uri).to_s.sub(HOST, '') }
         end
@@ -86,10 +86,10 @@ module FedoraLens
         UrisToIds.new
       end
 
-      class OrmToHash
+      class OrmToHash < Lens
         def initialize(name_to_lens)
           @name_to_lens = name_to_lens
-          super()
+          super
         end
         def get(orm)
           @name_to_lens.reduce({}) do |hash, (key, lens)|
@@ -113,7 +113,7 @@ module FedoraLens
         OrmToHash.new(name_to_lens)
       end
 
-      class AsDom
+      class AsDom < Lens
         def get(xml)
           Nokogiri::XML(xml)
         end
@@ -145,7 +145,7 @@ module FedoraLens
         AtCss.new(selector)
       end
 
-      class GetPredicate
+      class GetPredicate < Lens
         # @param [RDF::URI] predicate
         # @param [Hash] opts
         # @option opts [Proc] :select a proc that takes the object and returns 
@@ -157,7 +157,7 @@ module FedoraLens
         def initialize(predicate, opts = {})
           @predicate = predicate
           @opts = opts
-          super()
+          super
         end
         def empty_property(graph, rdf_subject, predicate, should_delete)
           if should_delete
@@ -194,11 +194,11 @@ module FedoraLens
         GetPredicate.new(predicate, opts)
       end
 
-      class Compose
+      class Compose < Lens
         def initialize(outer, inner)
           @outer = outer
           @inner = inner
-          super()
+          super
         end
         def get(source)
           @inner.get(@outer.get(source))
