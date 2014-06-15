@@ -42,7 +42,9 @@ describe FedoraLens do
         let(:existing) { TestClass.create(title: "created resource") }
         subject { TestClass.find(existing.id) }
         it { should be_kind_of TestClass }
-        its(:id) { should eq existing.id }
+        it "has the correct id" do
+          expect(subject.id).to eq existing.id
+        end
       end
     end
 
@@ -102,9 +104,9 @@ describe FedoraLens do
         after { subject.delete }
 
         it "saves with that id" do
-          expect(subject.new_record?).to be_true
-          expect(subject.save).to be_true
-          expect(subject.new_record?).to be_false
+          expect(subject.new_record?).to be_truthy
+          expect(subject.save).to be_truthy
+          expect(subject.new_record?).to be_falsey
         end
 
       end
