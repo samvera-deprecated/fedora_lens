@@ -71,14 +71,14 @@ module FedoraLens
 
       class UrisToIds < Lens
         def get(sources)
-          sources.map { |uri| URI.parse(uri).to_s.sub(HOST, '') }
+          sources.map { |uri| URI.parse(uri).to_s.sub(FedoraLens.host, '') }
         end
         def put(sources, values)
           create(values)
         end
         def create(values)
           Array(values).compact.map do |value|
-            RDF::URI.new(HOST + value)
+            RDF::URI.new(FedoraLens.host + value)
           end
         end
       end

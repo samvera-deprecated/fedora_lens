@@ -92,7 +92,7 @@ module FedoraLens
 
     describe ".uris_to_ids" do
       let(:lens) { Lenses.uris_to_ids }
-      let(:original) { [RDF::URI.new(HOST + '/id/123'), RDF::URI.new(HOST + '/id/321')] }
+      let(:original) { [RDF::URI.new(FedoraLens.host + '/id/123'), RDF::URI.new(FedoraLens.host + '/id/321')] }
 
       it "obeys lens laws" do
         check_laws lens, original, ['/id/123', '/id/321']
@@ -122,7 +122,7 @@ module FedoraLens
         context "with new values " do
           let(:input) { ['/id/777', '/id/888'] }
           it "overwrites the items" do
-            expect(subject).to eq [RDF::URI.new(HOST + '/id/777'), RDF::URI.new(HOST + '/id/888')]
+            expect(subject).to eq [RDF::URI.new(FedoraLens.host + '/id/777'), RDF::URI.new(FedoraLens.host + '/id/888')]
           end
         end
 

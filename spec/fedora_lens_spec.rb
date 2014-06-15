@@ -75,7 +75,7 @@ describe FedoraLens do
 
     describe "#id" do
       it "should not have 'fedora' in the id" do
-        m = TestClass.new(FedoraLens::HOST + '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
+        m = TestClass.new(FedoraLens.host + '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
         expect(m.id).to eq '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52'
       end
     end
@@ -114,11 +114,11 @@ describe FedoraLens do
       subject { TestClass.id_to_uri(id) }
       context "without a leading slash" do
         let(:id) { 'test' }
-        it { should eq FedoraLens::HOST + '/test' }
+        it { should eq FedoraLens.host + '/test' }
       end
       context "with a leading slash" do
         let(:id) { '/test' }
-        it { should eq FedoraLens::HOST + '/test' }
+        it { should eq FedoraLens.host + '/test' }
       end
     end
 

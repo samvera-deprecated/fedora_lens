@@ -5,7 +5,7 @@ Bundler::GemHelper.install_tasks
 
 RSpec::Core::RakeTask.new(:spec)
 
-ZIP_URL = "https://github.com/projecthydra/hydra-jetty/archive/fedora-4a5.zip"
+ZIP_URL = "https://github.com/projecthydra/hydra-jetty/archive/fedora-4a6.zip"
 require 'jettywrapper'
 
 task default: :ci

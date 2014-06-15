@@ -29,7 +29,11 @@ module FedoraLens
   #HOST = "http://localhost:8080"
 
   def self.connection
-    @@connection ||= Ldp::Client.new(HOST)
+    @@connection ||= Ldp::Client.new(host)
+  end
+
+  def self.host
+    HOST
   end
 
   included do
@@ -137,11 +141,11 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      HOST + (id.start_with?('/') ? id : '/' + id)
+      FedoraLens.host + (id.start_with?('/') ? id : '/' + id)
     end
 
     def uri_to_id(uri)
-      uri.to_s.sub(HOST, '')
+      uri.to_s.sub(FedoraLens.host, '')
     end
 
     def create(data)
