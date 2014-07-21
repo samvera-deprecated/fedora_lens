@@ -42,7 +42,10 @@ describe FedoraLens do
         let(:existing) { TestClass.create(title: "created resource") }
         subject { TestClass.find(existing.id) }
         it { should be_kind_of TestClass }
-        its(:id) { should eq existing.id }
+
+        it "should have the same id" do
+          expect(subject.id).to eq existing.id
+        end
       end
     end
 
@@ -102,9 +105,9 @@ describe FedoraLens do
         after { subject.delete }
 
         it "saves with that id" do
-          expect(subject.new_record?).to be_true
-          expect(subject.save).to be_true
-          expect(subject.new_record?).to be_false
+          expect(subject.new_record?).to be true
+          expect(subject.save).to be true
+          expect(subject.new_record?).to be false
         end
 
       end
@@ -112,13 +115,33 @@ describe FedoraLens do
 
     describe "id_to_uri" do
       subject { TestClass.id_to_uri(id) }
-      context "without a leading slash" do
-        let(:id) { 'test' }
-        it { should eq FedoraLens.host + '/test' }
+      context "no base_node set" do
+        context "without a leading slash" do
+          let(:id) { 'test' }
+          it { should eq FedoraLens.host + '/test' }
+        end
+        context "with a leading slash" do
+          let(:id) { '/test' }
+          it { should eq FedoraLens.host + '/test' }
+        end
       end
-      context "with a leading slash" do
-        let(:id) { '/test' }
-        it { should eq FedoraLens.host + '/test' }
+
+      context "with base_node set" do
+        before do
+          @original_base = FedoraLens.base_node
+          FedoraLens.base_node = '/foo'
+        end
+
+        after { FedoraLens.base_node = @original_base }
+
+        context "without a leading slash" do
+          let(:id) { 'test' }
+          it { should eq FedoraLens.host + '/foo/test' }
+        end
+        context "with a leading slash" do
+          let(:id) { '/test' }
+          it { should eq FedoraLens.host + '/foo/test' }
+        end
       end
     end
 

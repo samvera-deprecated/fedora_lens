@@ -36,6 +36,17 @@ module FedoraLens
     HOST
   end
 
+  def self.base_node
+    @@base_node ||= ''
+  end
+
+  # Set a base node if you want to put all your objects below a certain path
+  # example:
+  #   FedoraLens.base_node = '/text
+  def self.base_node= path
+    @@base_node =  path
+  end
+
   included do
     extend ActiveModel::Naming
     include ActiveModel::Validations
@@ -141,7 +152,7 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      FedoraLens.host + (id.start_with?('/') ? id : '/' + id)
+      FedoraLens.host + FedoraLens.base_node + (id.start_with?('/') ? id : '/' + id)
     end
 
     def uri_to_id(uri)
