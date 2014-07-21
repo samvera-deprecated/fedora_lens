@@ -129,22 +129,22 @@ describe FedoraLens do
       context "with base_path set" do
         before do
           @original_base = FedoraLens.base_path
-          FedoraLens.base_path = '/foo'
+          FedoraLens.base_path = '/test'
         end
 
         after { FedoraLens.base_path = @original_base }
 
         context "without a leading slash" do
-          let(:id) { 'test' }
-          it { should eq FedoraLens.host + '/foo/test' }
+          let(:id) { 'test-me' }
+          it { should eq FedoraLens.host + '/test/test-me' }
         end
         context "with a leading slash" do
-          let(:id) { '/test' }
-          it { should eq FedoraLens.host + '/foo/test' }
+          let(:id) { '/test-me' }
+          it { should eq FedoraLens.host + '/test/test-me' }
         end
         context "within the base path" do
-          let(:id) { '/foo/test' }
-          it { should eq FedoraLens.host + '/foo/test' }
+          let(:id) { '/test/test-me' }
+          it { should eq FedoraLens.host + '/test/test-me' }
         end
       end
     end

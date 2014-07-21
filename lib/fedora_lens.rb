@@ -154,7 +154,7 @@ module FedoraLens
 
     def id_to_uri(id)
       id = "/#{id}" unless id.start_with? '/'
-      id = FedoraLens.base_path + id unless id.start_with? FedoraLens.base_path
+      id = FedoraLens.base_path + id unless id.start_with? "#{FedoraLens.base_path}/"
       FedoraLens.host + id
     end
 
