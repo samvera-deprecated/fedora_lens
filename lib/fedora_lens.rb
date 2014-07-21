@@ -26,25 +26,26 @@ module FedoraLens
   end
 
   HOST = "http://localhost:8983/fedora/rest"
-  #HOST = "http://localhost:8080"
 
-  def self.connection
-    @@connection ||= Ldp::Client.new(host)
-  end
+  class << self
+    def connection
+      @@connection ||= Ldp::Client.new(host)
+    end
 
-  def self.host
-    HOST
-  end
+    def host
+      HOST
+    end
 
-  def self.base_node
-    @@base_node ||= ''
-  end
+    def base_node
+      @@base_node ||= ''
+    end
 
-  # Set a base node if you want to put all your objects below a certain path
-  # example:
-  #   FedoraLens.base_node = '/text
-  def self.base_node= path
-    @@base_node =  path
+    # Set a base node if you want to put all your objects below a certain path
+    # example:
+    #   FedoraLens.base_node = '/text
+    def base_node= path
+      @@base_node =  path
+    end
   end
 
   included do
@@ -111,7 +112,7 @@ module FedoraLens
           @attributes = get_attributes_from_orm(@orm)
         when NilClass, Hash
           data = subject_or_data || {}
-          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new))
+          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new, FedoraLens.base_node))
           @attributes = data.with_indifferent_access
         when String
           data ||= {}
