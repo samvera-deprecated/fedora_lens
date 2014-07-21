@@ -36,15 +36,15 @@ module FedoraLens
       HOST
     end
 
-    def base_node
-      @@base_node ||= ''
+    def base_path
+      @@base_path ||= ''
     end
 
-    # Set a base node if you want to put all your objects below a certain path
+    # Set a base path if you want to put all your objects below a certain path
     # example:
-    #   FedoraLens.base_node = '/text
-    def base_node= path
-      @@base_node =  path
+    #   FedoraLens.base_path = '/text
+    def base_path= path
+      @@base_path =  path
     end
   end
 
@@ -112,7 +112,7 @@ module FedoraLens
           @attributes = get_attributes_from_orm(@orm)
         when NilClass, Hash
           data = subject_or_data || {}
-          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new, FedoraLens.base_node))
+          @orm = Ldp::Orm.new(Ldp::Resource::RdfSource.new(FedoraLens.connection, nil, RDF::Graph.new, FedoraLens.host + FedoraLens.base_path))
           @attributes = data.with_indifferent_access
         when String
           data ||= {}
@@ -153,7 +153,9 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      FedoraLens.host + FedoraLens.base_node + (id.start_with?('/') ? id : '/' + id)
+      id = "/#{id}" unless id.start_with? '/'
+      id = FedoraLens.base_path + id unless id.start_with? FedoraLens.base_path
+      FedoraLens.host + id
     end
 
     def uri_to_id(uri)

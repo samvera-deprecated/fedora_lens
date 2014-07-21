@@ -115,7 +115,7 @@ describe FedoraLens do
 
     describe "id_to_uri" do
       subject { TestClass.id_to_uri(id) }
-      context "no base_node set" do
+      context "no base_path set" do
         context "without a leading slash" do
           let(:id) { 'test' }
           it { should eq FedoraLens.host + '/test' }
@@ -126,13 +126,13 @@ describe FedoraLens do
         end
       end
 
-      context "with base_node set" do
+      context "with base_path set" do
         before do
-          @original_base = FedoraLens.base_node
-          FedoraLens.base_node = '/foo'
+          @original_base = FedoraLens.base_path
+          FedoraLens.base_path = '/foo'
         end
 
-        after { FedoraLens.base_node = @original_base }
+        after { FedoraLens.base_path = @original_base }
 
         context "without a leading slash" do
           let(:id) { 'test' }
@@ -140,6 +140,10 @@ describe FedoraLens do
         end
         context "with a leading slash" do
           let(:id) { '/test' }
+          it { should eq FedoraLens.host + '/foo/test' }
+        end
+        context "within the base path" do
+          let(:id) { '/foo/test' }
           it { should eq FedoraLens.host + '/foo/test' }
         end
       end
