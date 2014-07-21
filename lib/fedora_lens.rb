@@ -159,7 +159,7 @@ module FedoraLens
     end
 
     def uri_to_id(uri)
-      uri.to_s.sub(FedoraLens.host, '')
+      uri.to_s.sub(FedoraLens.host + FedoraLens.base_path, '')
     end
 
     def create(data)

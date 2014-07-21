@@ -149,6 +149,38 @@ describe FedoraLens do
       end
     end
 
+    describe "uri_to_id" do
+      subject { TestClass.uri_to_id(uri) }
+      context "no base_path set" do
+
+        context "at the base level" do
+          let(:uri) { "#{FedoraLens.host}/test" }
+          it { should eq '/test' }
+        end
+        context "at the second level" do
+          let(:uri) { "#{FedoraLens.host}/test/foo" }
+          it { should eq '/test/foo' }
+        end
+      end
+
+      context "with base_path set" do
+        before do
+          @original_base = FedoraLens.base_path
+          FedoraLens.base_path = '/test'
+        end
+
+        after { FedoraLens.base_path = @original_base }
+
+        context "at the base level" do
+          let(:uri) { "#{FedoraLens.host}/test/foo" }
+          it { should eq '/foo' }
+        end
+        context "at the second level" do
+          let(:uri) { "#{FedoraLens.host}/test/foo/bar" }
+          it { should eq '/foo/bar' }
+        end
+      end
+    end
   end
 
   context "with a class that has many attributes" do
