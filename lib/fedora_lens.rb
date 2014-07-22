@@ -135,31 +135,41 @@ module FedoraLens
 
     def create_record
       push_attributes_to_orm
-      @orm = orm.create
-
-      # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#created
-      # TODO perhaps attributes could be lazily fetched
-      @attributes = get_attributes_from_orm(@orm)
-
-      # This strips the ETag from the current ORM to avoid ETag exceptions on the next update,
-      # since the etag will change if a child node is added.
-      @orm = Ldp::Orm.new @orm.resource.class.new @orm.resource.client, @orm.resource.subject
-
+      create_and_fetch_attributes
       true
     end
 
     def update_record
       push_attributes_to_orm
-      orm.save!.tap do
-        @orm = orm.reload
-        # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#lastModified
-        # TODO perhaps attributes could be lazily fetched
-        @attributes = get_attributes_from_orm(@orm)
-      end
+      update_and_fetch_attributes
     end
 
 
   private
+
+  def update_and_fetch_attributes
+    orm.save!.tap do
+      @orm = orm.reload
+      # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#lastModified
+      # TODO perhaps attributes could be lazily fetched
+      @attributes = get_attributes_from_orm(@orm)
+    end
+  end
+
+  def create_and_fetch_attributes
+      @orm = orm.create
+      # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#created
+      # TODO perhaps attributes could be lazily fetched
+      @attributes = get_attributes_from_orm(@orm)
+      clear_cached_response
+  end
+
+  def clear_cached_response
+    # This strips the current cached response (and ETag) from the current ORM to avoid ETag exceptions on the next update,
+    # since the etag will change if a child node is added.
+    @orm = Ldp::Orm.new @orm.resource.class.new @orm.resource.client, @orm.resource.subject
+  end
+
 
   def push_attributes_to_orm
     @orm = self.class.orm_to_hash.put(@orm, @attributes)
