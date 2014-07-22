@@ -153,6 +153,7 @@ module FedoraLens
       # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#lastModified
       # TODO perhaps attributes could be lazily fetched
       @attributes = get_attributes_from_orm(@orm)
+      clear_cached_response
     end
   end
 
@@ -164,6 +165,8 @@ module FedoraLens
       clear_cached_response
   end
 
+  # TODO this causes slowness because we're losing the cached GET response. However it prevents ETag exceptions caused when a
+  # subnode is added before an update.
   def clear_cached_response
     # This strips the current cached response (and ETag) from the current ORM to avoid ETag exceptions on the next update,
     # since the etag will change if a child node is added.
