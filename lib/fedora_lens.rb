@@ -149,7 +149,7 @@ module FedoraLens
 
   def update_and_fetch_attributes
     orm.save!.tap do
-      @orm = orm.reload
+      clear_cached_response
       # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#lastModified
       # TODO perhaps attributes could be lazily fetched
       @attributes = get_attributes_from_orm(@orm)

@@ -88,9 +88,9 @@ describe FedoraLens do
 
       it "saves an updated resource" do
         m = TestClass.create(title: "created resource")
-        m.reload
         m.title = "changed title"
         expect { sleep 1; m.save }.to change { m.modified_date }
+        expect(m.modified_date).to_not be_empty
         TestClass.find(m.id).title.should eq "changed title"
       end
 

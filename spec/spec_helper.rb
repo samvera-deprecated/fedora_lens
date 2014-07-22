@@ -3,6 +3,10 @@ require "bundler/setup"
 require 'fedora_lens'
 require 'fedora_lens/lenses'
 
+# HttpLogger.logger = Logger.new(STDOUT)
+# HttpLogger.colorize = false
+# HttpLogger.ignore = [/localhost:8983\/solr/]
+
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
