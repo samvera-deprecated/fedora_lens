@@ -136,12 +136,20 @@ module FedoraLens
     def create_record
       push_attributes_to_orm
       @orm = orm.create
+      # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#created
+      # TODO perhaps attributes could be lazily fetched
+      @attributes = get_attributes_from_orm(@orm)
       true
     end
 
     def update_record
       push_attributes_to_orm
-      orm.save!
+      orm.save!.tap do
+        @orm = orm.reload
+        # This is slow, but it enables us to get attributes like http://fedora.info/definitions/v4/repository#lastModified
+        # TODO perhaps attributes could be lazily fetched
+        @attributes = get_attributes_from_orm(@orm)
+      end
     end
 
 

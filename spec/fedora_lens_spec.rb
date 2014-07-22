@@ -8,20 +8,14 @@ describe FedoraLens do
     @model = TestClass.new
   end
 
-
-  # before do
-  #   require 'logger'
-  #   Ldp.logger = Logger.new(STDOUT).tap do |l|
-  #     l.level = Logger::DEBUG
-  #   end
-  # end
-
-
   context "with a simple class" do
     before do
       class TestClass
         include FedoraLens
         attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+        attribute :create_date, [ RDF::URI.new("http://fedora.info/definitions/v4/repository#created"), FedoraLens::Lenses.single, FedoraLens::Lenses.literal_to_string ]
+        attribute :modified_date, [ RDF::URI.new("http://fedora.info/definitions/v4/repository#lastModified"), FedoraLens::Lenses.single, FedoraLens::Lenses.literal_to_string ]
+        
       end
     end
 
@@ -88,6 +82,7 @@ describe FedoraLens do
       it "saves a new resource" do
         m = TestClass.new(title: "created resource")
         m.save
+        expect(m.create_date).to_not be_nil
         TestClass.find(m.id).title.should eq "created resource"
       end
 
@@ -95,7 +90,7 @@ describe FedoraLens do
         m = TestClass.create(title: "created resource")
         m.reload
         m.title = "changed title"
-        m.save!
+        expect { sleep 1; m.save }.to change { m.modified_date }
         TestClass.find(m.id).title.should eq "changed title"
       end
 
