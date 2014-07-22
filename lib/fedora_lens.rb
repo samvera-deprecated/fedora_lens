@@ -46,6 +46,16 @@ module FedoraLens
     def base_path= path
       @@base_path =  path
     end
+
+    def id_to_uri(id)
+      id = "/#{id}" unless id.start_with? '/'
+      id = FedoraLens.base_path + id unless id.start_with? "#{FedoraLens.base_path}/"
+      FedoraLens.host + id
+    end
+
+    def uri_to_id(uri)
+      uri.to_s.sub(FedoraLens.host + FedoraLens.base_path, '')
+    end
   end
 
   included do
@@ -153,13 +163,11 @@ module FedoraLens
     end
 
     def id_to_uri(id)
-      id = "/#{id}" unless id.start_with? '/'
-      id = FedoraLens.base_path + id unless id.start_with? "#{FedoraLens.base_path}/"
-      FedoraLens.host + id
+      FedoraLens.id_to_uri(id)
     end
 
     def uri_to_id(uri)
-      uri.to_s.sub(FedoraLens.host + FedoraLens.base_path, '')
+      FedoraLens.uri_to_id(uri)
     end
 
     def create(data)
