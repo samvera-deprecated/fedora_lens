@@ -156,13 +156,21 @@ module FedoraLens
         Lenses.get_predicate(RDF::DC11.description).get(orm).should eq []
       end
 
+      it "sets the value of an Ldp::Orm for the specified predicate" do
+        subject.put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.should eq RDF::Literal.new("new")
+      end
+
+      context "when setting nil values (illegal in RDF)" do
+        it "skips them" do
+          expect(subject.put(orm, [nil]).value(RDF::DC11.title)).to be_empty
+          expect(orm.graph.dump(:ttl)).to eq ''
+        end
+      end
+
+
       it "is well-behaved (PutGet: get(put(source, value)) == value)" do
         converted = subject.get(subject.put(orm, value))
         expect(converted).to eq value
-      end
-
-      it "sets the value of an Ldp::Orm for the specified predicate" do
-        subject.put(orm, [RDF::Literal.new("new")]).value(RDF::DC11.title).first.should eq RDF::Literal.new("new")
       end
 
       it "is well-behaved (GetPut: put(source, get(source)) == source)" do

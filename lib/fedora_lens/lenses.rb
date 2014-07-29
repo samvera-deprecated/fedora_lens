@@ -134,6 +134,7 @@ module FedoraLens
           put: lambda do |orm, values|
             empty_property(orm.graph, orm.resource.subject_uri, predicate, opts[:select])
             Array(values).each do |value|
+              next if value.nil?
               orm.graph.insert([orm.resource.subject_uri, predicate, value])
             end
             orm

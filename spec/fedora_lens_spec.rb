@@ -217,6 +217,27 @@ describe FedoraLens do
       it "mixes rdf and xml" do
       end
 
+      context "with a nil attribute" do
+        before do
+          class TestClass2
+            include FedoraLens
+
+            attribute :subject, [RDF::DC11.subject, Lenses.single]
+          end
+        end
+        after do
+          Object.send(:remove_const, :TestClass2)
+        end
+
+        subject { TestClass2.new }
+
+        it "should not push nil attributes to orm" do
+          subject.send(:push_attributes_to_orm)
+          expect(subject.orm.graph.dump(:ttl)).to eq('')
+        end
+
+      end
+
       context "that are inherited" do
         before do
           class TestClass2
