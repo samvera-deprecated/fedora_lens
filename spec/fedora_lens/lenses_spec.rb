@@ -58,7 +58,7 @@ module FedoraLens
 
     describe ".uris_to_ids" do
       let(:mapper) { double('mapper') }
-      let(:lens) { Lenses.uris_to_ids(lambda { mapper }) }
+      let(:lens) { Lenses.uris_to_ids { mapper } }
 
       let(:id1) { '/id/123' }
       let(:id2) { '/id/321' }
