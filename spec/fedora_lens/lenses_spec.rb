@@ -57,17 +57,26 @@ module FedoraLens
     end
 
     describe ".uris_to_ids" do
-      let(:lens) { Lenses.uris_to_ids }
+      let(:mapper) { double('mapper') }
+      let(:lens) { Lenses.uris_to_ids(lambda { mapper }) }
 
-      let(:original) { [RDF::URI.new(FedoraLens.host + '/id/123'), RDF::URI.new(FedoraLens.host + '/id/321')] }
+      let(:id1) { '/id/123' }
+      let(:id2) { '/id/321' }
+      let(:uri1) { RDF::URI.new(FedoraLens.host + id1) }
+      let(:uri2) { RDF::URI.new(FedoraLens.host + id2) }
+
+      let(:ids) { [id1, id2] }
+      let(:uris) { [uri1, uri2] }
 
       describe "#get" do
         subject { lens.get(input) }
 
         context "with exiting content" do
-          let(:input) { original  }
+          let(:input) { uris }
           it "casts them to string" do
-            expect(subject).to eq ['/id/123', '/id/321']
+            expect(mapper).to receive(:uri_to_id).with(uri1).and_return(id1)
+            expect(mapper).to receive(:uri_to_id).with(uri2).and_return(id2)
+            expect(subject).to eq ids
           end
         end
 
@@ -80,12 +89,17 @@ module FedoraLens
       end
 
       describe "#put" do
+        let(:original) { [RDF::URI.new(FedoraLens.host + '/foo/1'), RDF::URI.new(FedoraLens.host + '/foo/2')] }
         subject { lens.put(original, input) }
 
         context "with new values " do
-          let(:input) { ['/id/777', '/id/888'] }
+          let(:id1) { '/id/777' }
+          let(:id2) { '/id/888' }
+          let(:input) { ids }
           it "overwrites the items" do
-            expect(subject).to eq [RDF::URI.new(FedoraLens.host + '/id/777'), RDF::URI.new(FedoraLens.host + '/id/888')]
+            expect(mapper).to receive(:id_to_uri).with(id1).and_return(uri1)
+            expect(mapper).to receive(:id_to_uri).with(id2).and_return(uri2)
+            expect(subject).to eq uris
           end
         end
 

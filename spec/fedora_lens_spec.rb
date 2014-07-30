@@ -73,7 +73,7 @@ describe FedoraLens do
     describe "#id" do
       it "should not have 'fedora' in the id" do
         m = TestClass.new(FedoraLens.host + '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
-        expect(m.id).to eq '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52'
+        expect(m.id).to eq '41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52'
       end
     end
 
@@ -150,11 +150,11 @@ describe FedoraLens do
 
         context "at the base level" do
           let(:uri) { "#{FedoraLens.host}/test" }
-          it { should eq '/test' }
+          it { should eq 'test' }
         end
         context "at the second level" do
           let(:uri) { "#{FedoraLens.host}/test/foo" }
-          it { should eq '/test/foo' }
+          it { should eq 'test/foo' }
         end
       end
 
@@ -168,11 +168,11 @@ describe FedoraLens do
 
         context "at the base level" do
           let(:uri) { "#{FedoraLens.host}/test/foo" }
-          it { should eq '/foo' }
+          it { should eq 'foo' }
         end
         context "at the second level" do
           let(:uri) { "#{FedoraLens.host}/test/foo/bar" }
-          it { should eq '/foo/bar' }
+          it { should eq 'foo/bar' }
         end
       end
     end

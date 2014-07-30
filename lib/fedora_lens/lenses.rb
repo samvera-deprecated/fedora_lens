@@ -47,14 +47,16 @@ module FedoraLens
         ]
       end
 
-      def uris_to_ids
+      # @param class_lambda [Proc] returns an object which implements uri_to_id and id_to_uri 
+      def uris_to_ids(evalable)
+        obj = evalable.call
         Lens[
           get: lambda do |source|
-            source.map { |uri| FedoraLens.uri_to_id(URI.parse(uri).to_s) }
+            source.map { |uri| obj.uri_to_id(URI.parse(uri).to_s) }
           end,
           put: lambda do |sources, values|
             Array(values).compact.map do |value|
-              RDF::URI.new(FedoraLens.id_to_uri(value))
+              RDF::URI.new(obj.id_to_uri(value))
             end
           end
         ]
