@@ -21,7 +21,7 @@ describe FedoraLens do
     before do
       class TestClass
         include FedoraLens
-        attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+        attribute :title, [RDF::DC11.title, Lenses.first, Lenses.literal_to_string]
       end
     end
 
@@ -42,7 +42,9 @@ describe FedoraLens do
         let(:existing) { TestClass.create(title: "created resource") }
         subject { TestClass.find(existing.id) }
         it { should be_kind_of TestClass }
-        its(:id) { should eq existing.id }
+        it "has the correct id" do
+          expect(subject.id).to eq existing.id
+        end
       end
     end
 
@@ -75,7 +77,7 @@ describe FedoraLens do
 
     describe "#id" do
       it "should not have 'fedora' in the id" do
-        m = TestClass.new(FedoraLens::HOST + '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
+        m = TestClass.new(FedoraLens.host + '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52')
         expect(m.id).to eq '/41/0d/6b/47/410d6b47-ce9c-4fa0-91e2-d62765667c52'
       end
     end
@@ -102,9 +104,9 @@ describe FedoraLens do
         after { subject.delete }
 
         it "saves with that id" do
-          expect(subject.new_record?).to be_true
-          expect(subject.save).to be_true
-          expect(subject.new_record?).to be_false
+          expect(subject.new_record?).to be_truthy
+          expect(subject.save).to be_truthy
+          expect(subject.new_record?).to be_falsey
         end
 
       end
@@ -114,11 +116,11 @@ describe FedoraLens do
       subject { TestClass.id_to_uri(id) }
       context "without a leading slash" do
         let(:id) { 'test' }
-        it { should eq FedoraLens::HOST + '/test' }
+        it { should eq FedoraLens.host + '/test' }
       end
       context "with a leading slash" do
         let(:id) { '/test' }
-        it { should eq FedoraLens::HOST + '/test' }
+        it { should eq FedoraLens.host + '/test' }
       end
     end
 
@@ -128,8 +130,8 @@ describe FedoraLens do
     before do
       class TestClass
         include FedoraLens
-        attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
-        attribute :subject, [RDF::DC11.subject, Lenses.single, Lenses.literal_to_string]
+        attribute :title, [RDF::DC11.title, Lenses.first, Lenses.literal_to_string]
+        attribute :subject, [RDF::DC11.subject, Lenses.first, Lenses.literal_to_string]
       end
     end
 
@@ -206,7 +208,7 @@ describe FedoraLens do
       context "that are inherited" do
         before do
           class TestSubclass < TestClass
-            attribute :description, [RDF::DC11.description, Lenses.single, Lenses.literal_to_string]
+            attribute :description, [RDF::DC11.description, Lenses.first, Lenses.literal_to_string]
           end
         end
         after do

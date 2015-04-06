@@ -34,23 +34,23 @@ class TestClass
     ]
   end
 
-  attribute :title, [RDF::DC11.title, Lenses.single, Lenses.literal_to_string]
+  attribute :title, [RDF::DC11.title, Lenses.first, Lenses.literal_to_string]
   attribute :mixinTypes, [
     RDF::URI.new("http://fedora.info/definitions/v4/repository#mixinTypes")]
   attribute :primaryType, [
     RDF::URI.new("http://fedora.info/definitions/v4/repository#primaryType"),
-    Lenses.single,
+    Lenses.first,
     Lenses.literal_to_string]
   attribute :primary_id, [
     RDF::DC11.relation,
-    Lenses.single,
+    Lenses.first,
     Lenses.literal_to_string,
     Lenses.as_dom,
     # Lenses.at_css("relationship[type=primary]")]
     custom_lens("primary")]
   attribute :secondary, [
     RDF::DC11.relation,
-    Lenses.single,
+    Lenses.first,
     Lenses.literal_to_string,
     Lenses.as_dom,
     custom_lens("secondary"),

@@ -1,15 +1,27 @@
 require 'active_support/core_ext/hash'
 
 module FedoraLens
-  class Lens < ActiveSupport::HashWithIndifferentAccess
+  class Lens
+    attr_reader(:options)
+
+    def initialize(*options)
+      @options = options
+    end
+
     def get(source)
-      self[:get].call(source)
+      raise NotImplementedError.new
     end
+
     def put(source, value)
-      self[:put].call(source, value)
+      raise NotImplementedError.new
     end
+
     def create(value)
-      self[:create].call(value)
+      raise NotImplementedError.new
+    end
+
+    def ==(other_lens)
+      self.class == other_lens.class && options == other_lens.options
     end
   end
 end
